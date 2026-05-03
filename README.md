@@ -201,14 +201,7 @@ The goals are:
 
 ## License
 
-Choose a license before publishing if you want others to reuse the site.
-
-Common choices:
-
-* MIT License for permissive reuse
-* BSD-2-Clause or BSD-3-Clause for a traditional permissive license
-* CC BY-SA for documentation-style sharing
-* Public domain dedication if you want it completely free to reuse
+GPL-v3
 
 ---
 
