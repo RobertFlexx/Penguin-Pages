@@ -1,78 +1,106 @@
 # Penguin Pages
 
 <p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/3/35/Tux.svg" alt="Tux, the Linux mascot" width="220">
+  <a href="https://robertflexx.github.io/Penguin-Pages/#home">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/3/35/Tux.svg" alt="Tux, the Linux mascot" width="260">
+  </a>
 </p>
 
 <p align="center">
-  <strong>An unofficial Linux reference site with an early-2000s documentation mirror feel.</strong>
+  <strong>An unofficial Linux reference site for GitHub Pages.</strong>
 </p>
 
 <p align="center">
-  <a href="https://www.kernel.org/">kernel.org</a> ·
-  <a href="https://docs.kernel.org/">Linux kernel docs</a> ·
-  <a href="https://man7.org/linux/man-pages/">Linux man-pages</a> ·
-  <a href="https://www.x.org/">X.Org</a> ·
-  <a href="https://wayland.freedesktop.org/">Wayland</a>
+  <a href="https://robertflexx.github.io/Penguin-Pages/#home"><strong>Visit the site</strong></a>
+</p>
+
+<p align="center">
+  <a href="https://robertflexx.github.io/Penguin-Pages/#kernel">Kernel</a> ·
+  <a href="https://robertflexx.github.io/Penguin-Pages/#boot">Boot</a> ·
+  <a href="https://robertflexx.github.io/Penguin-Pages/#admin">Sysadmin</a> ·
+  <a href="https://robertflexx.github.io/Penguin-Pages/#commands">Commands</a> ·
+  <a href="https://robertflexx.github.io/Penguin-Pages/#source">Source Tree</a> ·
+  <a href="https://robertflexx.github.io/Penguin-Pages/#graphics">Graphics</a> ·
+  <a href="https://robertflexx.github.io/Penguin-Pages/#distros">Distros</a> ·
+  <a href="https://robertflexx.github.io/Penguin-Pages/#links">Links</a>
 </p>
 
 ---
 
 ## About
 
-**Penguin Pages** is a small static Linux reference website built for GitHub Pages. It is styled like an old Linux documentation mirror: plain colors, hard borders, compact text, simple tabs, real documentation links, and no modern web-app bloat.
+Penguin Pages is a static Linux reference site with an early web documentation style.
 
-The site collects practical Linux notes in one place, including kernel documentation, boot repair, sysadmin commands, filesystem layout, package managers, graphics stack notes, distro references, and source tree navigation.
+It contains notes and links for Linux kernel documentation, boot repair, system administration, common commands, the Linux source tree, graphics stacks, distribution families, and related open source projects.
 
-It is not a distro, not a commercial product, and not an official Linux project. It is just a clean little reference shelf for people who like Linux, terminals, manuals, and the old web.
+The site is built for GitHub Pages and is meant to be fast, simple, readable, and easy to edit.
 
 ---
 
-## What the site includes
+## Live site
 
-* A front page with a classic Tux header
-* Kernel boot parameter notes
-* `/proc`, `/sys`, and `/dev` explanations
-* Boot chain and recovery notes
-* GRUB and initramfs repair examples
-* Sysadmin command cribsheet
-* Filesystem hierarchy notes
-* Package manager references
-* Linux source tree map
-* X.Org, Wayland, Mesa, DRM, and desktop stack notes
-* Distro family reference table
-* Real links to official documentation
-* Small JavaScript tab system
-* Local search/filter box
+[https://robertflexx.github.io/Penguin-Pages/#home](https://robertflexx.github.io/Penguin-Pages/#home)
+
+---
+
+## What it is
+
+Penguin Pages is a small Linux documentation homepage. It is not a distro, package manager, wiki engine, or full manual replacement. It is a quick reference page for common Linux topics and useful documentation links.
+
+The design is intentionally old-school: simple boxes, small text, plain colors, and a Tux logo at the top.
+
+---
+
+## Sections
+
+* **Front page** - site overview and quick notes
+* **Kernel** - kernel docs, boot parameters, modules, `/proc`, `/sys`, and `/dev`
+* **Boot** - Linux boot chain, GRUB notes, initramfs notes, and recovery commands
+* **Sysadmin** - filesystem layout, users, permissions, logs, services, and first checks
+* **Commands** - shell, storage, networking, process, and package manager examples
+* **Source Tree** - overview of the Linux kernel source directories
+* **Graphics** - DRM/KMS, Mesa, X.Org, Wayland, and desktop stack notes
+* **Distros** - common distribution families and package tools
+* **Links** - external Linux documentation and project links
+
+---
+
+## Features
+
+* Static HTML site
+* GitHub Pages ready
+* Early-2000s Linux documentation style
+* Real Tux SVG from Wikimedia Commons
+* Tab navigation
+* Hash-based section links
+* Page filtering
 * Print-friendly styling
-* Tiny lookup shell for Linux topics
+* Small Linux lookup shell
+* Real links to Linux documentation and project sites
+* No build step or framework required
 
 ---
 
-## Screenshots
-
-Add screenshots here once the site is published.
+## Repository layout
 
 ```text
-screenshots/
-├── front-page.png
-├── kernel-tab.png
-└── commands-tab.png
+Penguin-Pages/
+├── index.html
+├── README.md
+└── LICENSE
 ```
 
 ---
 
 ## Running locally
 
-This site is just static HTML, CSS, and JavaScript.
-
-Open it directly:
+Open the site directly:
 
 ```sh
 xdg-open index.html
 ```
 
-Or serve it locally:
+Or run a local web server:
 
 ```sh
 python3 -m http.server 8000
@@ -86,125 +114,42 @@ http://localhost:8000
 
 ---
 
-## GitHub Pages setup
+## GitHub Pages
 
-1. Put the site file in the repository as `index.html`.
-2. Put this README in the repository as `README.md`.
-3. Commit and push:
+The site is served through GitHub Pages from the repository contents. Since the page is static, GitHub Pages can host it directly without any build process.
 
-```sh
-git add index.html README.md
-git commit -m "Add Penguin Pages site"
-git push
-```
-
-4. Open the repository on GitHub.
-5. Go to **Settings → Pages**.
-6. Set the source to the branch containing `index.html`.
-7. Save and wait for GitHub Pages to publish the site.
-
-The finished URL usually looks like:
+The main site file is:
 
 ```text
-https://USERNAME.github.io/REPOSITORY/
+index.html
 ```
-
----
-
-## Suggested repository layout
-
-```text
-penguin-pages/
-├── index.html
-├── README.md
-├── screenshots/
-│   ├── front-page.png
-│   ├── kernel-tab.png
-│   └── commands-tab.png
-└── LICENSE
-```
-
-The current version keeps everything in one HTML file, so it is easy to publish and easy to copy around.
-
----
-
-## Documentation linked by the site
-
-Penguin Pages links to real Linux and open source documentation, including:
-
-* Linux kernel documentation
-* The Linux Kernel Archives
-* Linux man-pages project
-* GNU coreutils manual
-* Bash manual
-* Debian documentation
-* Fedora documentation
-* Arch Wiki
-* openSUSE documentation
-* Gentoo Wiki
-* Void Linux Handbook
-* SlackDocs
-* X.Org
-* Wayland
-* freedesktop.org
-* Mesa
-* PipeWire
-* BusyBox
-* Bootlin Elixir source browser
-* kernel.org git browser
 
 ---
 
 ## Tux artwork
 
-The Tux image used in the site header is loaded from Wikimedia Commons:
+The Tux image is loaded from Wikimedia Commons:
 
 ```html
 <img src="https://upload.wikimedia.org/wikipedia/commons/3/35/Tux.svg" alt="Tux, the Linux mascot">
 ```
 
-The image links back to the Wikimedia Commons file page in the site itself.
+File page:
 
----
-
-## Design goals
-
-Penguin Pages intentionally avoids the heavy modern landing-page look. The style is closer to old documentation mirrors, personal Linux pages, and early web reference indexes.
-
-The goals are:
-
-* readable first
-* fast to load
-* easy to host
-* easy to edit
-* no build step
-* no framework
-* no tracking
-* no unnecessary dependencies
-* useful even with JavaScript disabled, aside from tab switching and search
-
----
-
-## Ideas for future additions
-
-* More init system notes: systemd, OpenRC, runit, s6, dinit
-* Filesystem pages for ext4, Btrfs, XFS, ZFS, tmpfs, overlayfs
-* Networking page for NetworkManager, systemd-networkd, ifupdown, nftables
-* Audio stack page for ALSA, PulseAudio, PipeWire, WirePlumber
-* Bootloader page for GRUB, systemd-boot, rEFInd, Limine
-* Kernel build page with distro-specific instructions
-* Troubleshooting flowcharts
-* Small glossary of Linux terms
-* More old-web badges and mirror links
+[https://commons.wikimedia.org/wiki/File:Tux.svg](https://commons.wikimedia.org/wiki/File:Tux.svg)
 
 ---
 
 ## License
 
-GPL-v3
+Penguin Pages is licensed under the **GNU General Public License v3.0**.
+
+See the `LICENSE` file for the full license text.
 
 ---
 
 ## Disclaimer
 
-Penguin Pages is an unofficial reference site. Linux is a trademark of Linus Torvalds in the United States and other countries. This site is not affiliated with Linus Torvalds, The Linux Foundation, kernel.org, GNU, Debian, Fedora, Arch Linux, openSUSE, Gentoo, Void Linux, Slackware, X.Org, Wayland, Mesa, or any other project linked from the site.
+Penguin Pages is an unofficial Linux reference site.
+
+Linux is a trademark of Linus Torvalds in the United States and other countries.
