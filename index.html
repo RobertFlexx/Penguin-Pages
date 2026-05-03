@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Penguin Pages is an unofficial Linux reference site with kernel, boot, sysadmin, source tree, and distribution notes.">
+  <title>Penguin Pages - Unofficial Linux Reference</title>
+  <style>
+    :root {
+      --bg: #d7d7c8;
+      --paper: #f7f7e9;
+      --paper2: #eeeedc;
+      --ink: #111111;
+      --muted: #555544;
+      --blue: #003399;
+      --red: #8b0000;
+      --green: #1e5a24;
+      --line: #777766;
+      --line2: #b8b89e;
+      --hilite: #ffffcc;
+      --mono: "Courier New", Courier, monospace;
+      --sans: Verdana, Arial, Helvetica, sans-serif;
+      --serif: Georgia, "Times New Roman", serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: var(--sans);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    a { color: var(--blue); text-decoration: underline; }
+    a:visited { color: #551a8b; }
+    a:hover { color: var(--red); background: var(--hilite); }
+
+    .page {
+      width: min(980px, calc(100% - 24px));
+      margin: 16px auto 28px;
+      border: 1px solid #555544;
+      background: var(--paper);
+      box-shadow: 4px 4px 0 rgba(0,0,0,.18);
+    }
+
+    .top-strip {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 5px 8px;
+      color: #eeeeee;
+      background: #222222;
+      font-family: var(--mono);
+      font-size: 12px;
+      border-bottom: 3px double #777777;
+    }
+
+    .masthead {
+      display: grid;
+      grid-template-columns: 128px 1fr 205px;
+      gap: 14px;
+      align-items: center;
+      padding: 16px;
+      background: linear-gradient(90deg, #fbfbec, #e7e7d0);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tux-box {
+      min-height: 124px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line2);
+      background: #ffffff;
+    }
+
+    .tux-box img {
+      width: 86px;
+      height: auto;
+      display: block;
+    }
+
+    h1 {
+      margin: 0 0 5px;
+      font-family: var(--serif);
+      font-size: clamp(30px, 6vw, 48px);
+      line-height: 1;
+      letter-spacing: -2px;
+      color: #111111;
+    }
+
+    .subtitle {
+      margin: 0;
+      max-width: 640px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .note-card {
+      padding: 8px;
+      border: 1px solid var(--line2);
+      background: #ffffdf;
+      font-size: 12px;
+    }
+
+    .note-card strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--red);
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      padding: 0 8px;
+      border-bottom: 1px solid var(--line);
+      background: #d4d4bc;
+    }
+
+    .tab {
+      margin: 7px 2px 0 0;
+      padding: 6px 10px 7px;
+      border: 1px solid var(--line);
+      border-bottom: 0;
+      background: #c6c6ac;
+      color: #111111;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .tab:hover { background: #eeeecc; }
+
+    .tab.active {
+      position: relative;
+      bottom: -1px;
+      background: var(--paper);
+      color: var(--red);
+    }
+
+    .body-grid {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 700px;
+    }
+
+    .sidebar {
+      padding: 12px;
+      border-right: 1px solid var(--line);
+      background: var(--paper2);
+    }
+
+    .main {
+      padding: 12px;
+      background: var(--paper);
+    }
+
+    .box {
+      margin-bottom: 12px;
+      border: 1px solid var(--line2);
+      background: #fbfbef;
+    }
+
+    .box h2,
+    .box h3 {
+      margin: 0;
+      padding: 5px 7px;
+      color: #ffffff;
+      background: #334466;
+      font-size: 12px;
+      letter-spacing: .02em;
+    }
+
+    .box h3.green { background: #315a31; }
+    .box h3.red { background: #773333; }
+    .box h3.gray { background: #555555; }
+    .box h3.gold { background: #76612b; }
+
+    .box-content { padding: 8px; }
+    .small { font-size: 12px; color: var(--muted); }
+    .mono { font-family: var(--mono); }
+
+    .search {
+      width: 100%;
+      padding: 5px;
+      border: 1px solid #999977;
+      background: #ffffff;
+      color: #000000;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 7px;
+    }
+
+    button.oldbtn {
+      padding: 3px 7px;
+      color: #000000;
+      border: 2px outset #ddddcc;
+      background: #ddddcc;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    button.oldbtn:active { border-style: inset; }
+
+    ul.plain,
+    .doc-list { margin: 0; padding-left: 18px; }
+    .plain li,
+    .doc-list li { margin: 3px 0; }
+
+    .section {
+      display: none;
+      animation: show .14s linear;
+    }
+
+    .section.active { display: block; }
+
+    @keyframes show {
+      from { opacity: .45; }
+      to { opacity: 1; }
+    }
+
+    .headline {
+      margin: 0 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px dotted #999977;
+      font-family: var(--serif);
+      font-size: 24px;
+      line-height: 1.05;
+      color: #222222;
+    }
+
+    .lead {
+      margin-top: 0;
+      font-size: 14px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    table.listing {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      font-size: 12px;
+    }
+
+    .listing th,
+    .listing td {
+      padding: 5px 6px;
+      border: 1px solid #c7c7aa;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    .listing th {
+      color: #ffffff;
+      background: #555555;
+      font-weight: bold;
+    }
+
+    .listing tr:nth-child(even) td { background: #f3f3e5; }
+
+    pre {
+      overflow: auto;
+      margin: 8px 0;
+      padding: 8px;
+      border: 1px solid #999977;
+      background: #111111;
+      color: #eeeecc;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    code {
+      padding: 1px 3px;
+      border: 1px solid #d2d2b8;
+      background: #ffffdf;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .path {
+      font-family: var(--mono);
+      color: #003300;
+    }
+
+    .status-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      margin: 10px 0 0;
+      padding: 7px;
+      border: 1px dashed #999977;
+      background: #ffffdf;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 1px 5px;
+      margin: 1px;
+      border: 1px solid #999977;
+      background: #e6e6cc;
+      font-family: var(--mono);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .warning {
+      margin-bottom: 12px;
+      padding: 8px;
+      border: 1px solid #aa7777;
+      background: #fff0e8;
+    }
+
+    .ok {
+      margin-bottom: 12px;
+      padding: 8px;
+      border: 1px solid #77aa77;
+      background: #efffed;
+    }
+
+    .terminal {
+      min-height: 230px;
+      max-height: 340px;
+      overflow: auto;
+      padding: 8px;
+      border: 1px solid #777766;
+      background: #080808;
+      color: #d9ffd1;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .prompt-row {
+      display: flex;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .prompt-row span {
+      padding: 5px 0;
+      color: #003300;
+      font-family: var(--mono);
+      font-weight: bold;
+    }
+
+    .prompt-row input {
+      flex: 1;
+      min-width: 0;
+      padding: 5px;
+      border: 1px solid #999977;
+      background: #ffffff;
+      color: #000000;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .footer {
+      padding: 8px 12px;
+      border-top: 1px solid var(--line);
+      background: #222222;
+      color: #ddddcc;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .footer a { color: #ffffaa; }
+
+    .blink { animation: blink 1s steps(1) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .webring {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 7px;
+      align-items: center;
+      margin-top: 10px;
+      padding: 6px;
+      border: 1px solid #999977;
+      background: #ececd4;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .webring:before,
+    .webring:after {
+      content: "";
+      height: 1px;
+      background: #aaa990;
+    }
+
+    @media print {
+      body { background: #ffffff; }
+      .page { width: auto; margin: 0; border: 0; box-shadow: none; }
+      .sidebar, .nav, .top-strip, .footer { display: none; }
+      .body-grid { display: block; }
+      .section { display: block; page-break-after: always; }
+      a:after { content: " (" attr(href) ")"; font-size: 10px; }
+    }
+
+    @media (max-width: 760px) {
+      .masthead { grid-template-columns: 86px 1fr; }
+      .note-card { grid-column: 1 / -1; }
+      .tux-box { min-height: 92px; }
+      .tux-box img { width: 64px; }
+      .body-grid { grid-template-columns: 1fr; }
+      .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }
+      .two-col, .three-col { grid-template-columns: 1fr; }
+      .top-strip { display: block; }
+      .page { width: calc(100% - 12px); margin-top: 6px; }
+      h1 { letter-spacing: -1px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="top-strip">
+      <span>Penguin Pages / unofficial Linux reference / plain static HTML</span>
+      <span id="clock">loading local time...</span>
+    </div>
+
+    <header class="masthead">
+      <div class="tux-box">
+        <a href="https://commons.wikimedia.org/wiki/File:Tux.svg" title="Tux on Wikimedia Commons"><img alt="Tux, the Linux mascot" src="https://upload.wikimedia.org/wikipedia/commons/3/35/Tux.svg"></a>
+      </div>
+      <div>
+        <h1>Penguin Pages</h1>
+        <p class="subtitle">An unofficial Linux reference shelf for kernel notes, boot repair, system administration, command examples, source tree maps, and distribution documentation. Small pages, real links, boring markup, useful notes.</p>
+        <div class="status-line">
+          <span>site: static</span>
+          <span>kernel docs: linked</span>
+          <span>display: 800x600 friendly</span>
+          <span>license: bring your own</span>
+        </div>
+      </div>
+      <aside class="note-card">
+        <strong>NOTICE</strong>
+        Commands marked with <span class="badge">root</span> can change a system. Read them first, keep backups, and keep a rescue USB nearby.
+      </aside>
+    </header>
+
+    <nav class="nav" aria-label="Site tabs">
+      <button class="tab active" data-tab="home">front page</button>
+      <button class="tab" data-tab="kernel">kernel</button>
+      <button class="tab" data-tab="boot">boot</button>
+      <button class="tab" data-tab="admin">sysadmin</button>
+      <button class="tab" data-tab="commands">commands</button>
+      <button class="tab" data-tab="source">source tree</button>
+      <button class="tab" data-tab="graphics">graphics</button>
+      <button class="tab" data-tab="distros">distros</button>
+      <button class="tab" data-tab="links">links</button>
+    </nav>
+
+    <div class="body-grid">
+      <aside class="sidebar">
+        <div class="box">
+          <h3>site search</h3>
+          <div class="box-content">
+            <input class="search" id="search" placeholder="filter visible notes...">
+            <div class="button-row">
+              <button class="oldbtn" id="clearSearch">clear</button>
+              <button class="oldbtn" id="printPage">print</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="box">
+          <h3 class="green">quick jumps</h3>
+          <div class="box-content">
+            <ul class="plain">
+              <li><a href="#kernel" data-tab-link="kernel">Kernel parameters</a></li>
+              <li><a href="#boot" data-tab-link="boot">Boot repair notes</a></li>
+              <li><a href="#source" data-tab-link="source">Source layout</a></li>
+              <li><a href="#commands" data-tab-link="commands">Command cribsheet</a></li>
+              <li><a href="#graphics" data-tab-link="graphics">X.Org and Wayland</a></li>
+              <li><a href="#distros" data-tab-link="distros">Distro families</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="box">
+          <h3 class="red">kernel ticker</h3>
+          <div class="box-content small mono" id="ticker">reading documentation index ... ok</div>
+        </div>
+
+        <div class="box">
+          <h3 class="gold">manual shelf</h3>
+          <div class="box-content small">
+            <a href="https://docs.kernel.org/">kernel docs</a><br>
+            <a href="https://man7.org/linux/man-pages/">man-pages</a><br>
+            <a href="https://www.debian.org/doc/">Debian docs</a><br>
+            <a href="https://wiki.archlinux.org/">Arch Wiki</a><br>
+            <a href="https://www.gnu.org/software/coreutils/manual/">coreutils</a>
+          </div>
+        </div>
+
+        <div class="box">
+          <h3 class="gray">badges</h3>
+          <div class="box-content small">
+            <span class="badge">Linux</span>
+            <span class="badge">GNU</span>
+            <span class="badge">POSIX</span>
+            <span class="badge">man-pages</span>
+            <span class="badge">HOWTO</span>
+            <span class="badge">X11</span>
+            <span class="badge">Wayland</span>
+          </div>
+        </div>
+
+        <div class="webring">open source web ring</div>
+      </aside>
+
+      <main class="main">
+        <section class="section active" id="home">
+          <h2 class="headline">Welcome to the Linux shelf.</h2>
+          <p class="lead">Penguin Pages is a compact reference site in the old Linux mirror tradition: restrained colors, small type, hard borders, dense links, and notes that are meant to be read.</p>
+
+          <div class="two-col">
+            <div class="box doc-block">
+              <h2>what is here?</h2>
+              <div class="box-content">
+                <ul class="doc-list">
+                  <li>Kernel boot parameter notes</li>
+                  <li><span class="path">/proc</span>, <span class="path">/sys</span>, modules, devices, initramfs</li>
+                  <li>Filesystem hierarchy reminders</li>
+                  <li>Networking, permissions, logs, services, users, and package tools</li>
+                  <li>Source tree map for browsing Linux kernel code</li>
+                  <li>X.Org, Wayland, Mesa, DRM, and desktop stack references</li>
+                  <li>A tiny local lookup shell for common Linux topics</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>classic reading order</h2>
+              <div class="box-content">
+                <ol>
+                  <li>Learn paths, permissions, shells, and logs.</li>
+                  <li>Read <code>man hier</code>, <code>man boot</code>, <code>man systemd</code>, or the docs for your init system.</li>
+                  <li>Learn how your bootloader finds the kernel and initramfs.</li>
+                  <li>Build a kernel once, even if you never daily-drive it.</li>
+                  <li>Keep notes when you fix things. Your future self is a very forgetful administrator.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <div class="box doc-block">
+            <h2>sample boot log</h2>
+            <div class="box-content">
+<pre>[    0.000000] Linux version 6.x.x (builder@penguinbox)
+[    0.000000] Command line: root=UUID=... rw loglevel=3
+[    0.120241] x86/fpu: Supporting XSAVE feature 0x001
+[    0.428922] ACPI: bus type PCI registered
+[    1.104911] virtio_blk virtio2: 1/0/0 default/read/poll queues
+[    2.021014] EXT4-fs mounted filesystem with ordered data mode
+[    2.880100] init: reached multi-user target</pre>
+              <p class="small">Old rule: read the logs first. They are not friendly, but they are usually honest.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="kernel">
+          <h2 class="headline">Kernel documentation notes.</h2>
+          <p class="lead">The kernel is memory management, schedulers, filesystems, drivers, networking, architecture code, process handling, security hooks, build logic, and many small interfaces that userspace quietly depends on.</p>
+
+          <div class="box doc-block">
+            <h2>official kernel documentation</h2>
+            <div class="box-content">
+              <ul class="doc-list">
+                <li><a href="https://docs.kernel.org/">docs.kernel.org</a> - current rendered kernel documentation.</li>
+                <li><a href="https://www.kernel.org/doc/">kernel.org documentation index</a> - documentation mirrored from kernel source.</li>
+                <li><a href="https://git.kernel.org/">git.kernel.org</a> - official kernel git browser.</li>
+                <li><a href="https://elixir.bootlin.com/linux/latest/source">Bootlin Elixir</a> - searchable Linux source browser.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="box doc-block">
+            <h2>boot parameters</h2>
+            <div class="box-content">
+              <table class="listing">
+                <tr><th>parameter</th><th>purpose</th><th>example</th></tr>
+                <tr><td><code>root=</code></td><td>Root filesystem device or UUID.</td><td><code>root=UUID=abcd-1234</code></td></tr>
+                <tr><td><code>rw</code> / <code>ro</code></td><td>Mount root read-write or read-only during early boot.</td><td><code>rw</code></td></tr>
+                <tr><td><code>init=</code></td><td>Use a specific first userspace process.</td><td><code>init=/bin/sh</code></td></tr>
+                <tr><td><code>loglevel=</code></td><td>Control console kernel message verbosity.</td><td><code>loglevel=7</code></td></tr>
+                <tr><td><code>nomodeset</code></td><td>Disable kernel mode setting for graphics debugging.</td><td><code>nomodeset</code></td></tr>
+                <tr><td><code>systemd.unit=</code></td><td>Boot to a systemd target.</td><td><code>systemd.unit=rescue.target</code></td></tr>
+                <tr><td><code>single</code></td><td>Request single-user or rescue style boot on many systems.</td><td><code>single</code></td></tr>
+                <tr><td><code>panic=</code></td><td>Automatically reboot after a panic delay.</td><td><code>panic=10</code></td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="three-col">
+            <div class="box doc-block"><h2>/proc</h2><div class="box-content"><p>Runtime process and kernel information. Try <code>cat /proc/cpuinfo</code>, <code>cat /proc/meminfo</code>, <code>cat /proc/cmdline</code>, and <code>cat /proc/mounts</code>.</p></div></div>
+            <div class="box doc-block"><h2>/sys</h2><div class="box-content"><p>Kernel object model exported to userspace. Devices, buses, drivers, firmware, power, and module attributes live here.</p></div></div>
+            <div class="box doc-block"><h2>/dev</h2><div class="box-content"><p>Device nodes. Disks, terminals, loop devices, random devices, input devices, and pseudo devices are exposed as files.</p></div></div>
+          </div>
+
+          <div class="box doc-block">
+            <h2>module workflow</h2>
+            <div class="box-content">
+<pre># list loaded modules
+lsmod
+
+# inspect a module
+modinfo i915
+
+# load and unload manually
+sudo modprobe loop
+sudo modprobe -r loop
+
+# show kernel ring buffer
+sudo dmesg -T</pre>
+            </div>
+          </div>
+
+          <div class="warning doc-block"><strong>Kernel build warning:</strong> keep a known-good kernel in the boot menu. Installing one broken kernel is annoying. Installing one broken kernel over your only boot entry is a Saturday afternoon tax.</div>
+        </section>
+
+        <section class="section" id="boot">
+          <h2 class="headline">Boot chain and recovery notes.</h2>
+          <p class="lead">A Linux boot usually fails at one layer: firmware, bootloader, kernel, initramfs, root filesystem, init system, display manager, or user session. Name the layer before replacing random packages.</p>
+
+          <div class="box doc-block">
+            <h2>boot path</h2>
+            <div class="box-content">
+              <table class="listing">
+                <tr><th>stage</th><th>what happens</th><th>common clues</th></tr>
+                <tr><td>firmware</td><td>UEFI or BIOS initializes hardware and picks a boot entry.</td><td>No boot menu, missing disk, wrong EFI entry.</td></tr>
+                <tr><td>bootloader</td><td>GRUB, systemd-boot, Limine, rEFInd, or another loader starts the kernel.</td><td>GRUB prompt, missing config, wrong UUID.</td></tr>
+                <tr><td>kernel</td><td>Hardware discovery, drivers, mounts, and early console output.</td><td>Kernel panic, driver errors, root not found.</td></tr>
+                <tr><td>initramfs</td><td>Temporary early userspace assembles storage and mounts root.</td><td>Emergency shell, missing modules, LUKS or LVM issue.</td></tr>
+                <tr><td>init</td><td>systemd, runit, OpenRC, s6, dinit, or another init starts services.</td><td>Failed units, stuck target, service loops.</td></tr>
+                <tr><td>login/session</td><td>Display manager, shell login, desktop session, user services.</td><td>Black screen, login loop, broken user config.</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="box doc-block">
+            <h2>chroot repair pattern</h2>
+            <div class="box-content">
+<pre># from a live USB, adjust partitions first
+sudo mount /dev/nvme0n1p2 /mnt
+sudo mount /dev/nvme0n1p1 /mnt/boot/efi
+sudo mount --bind /dev /mnt/dev
+sudo mount --bind /proc /mnt/proc
+sudo mount --bind /sys /mnt/sys
+sudo chroot /mnt
+
+# example GRUB EFI reinstall
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=Linux
+grub-mkconfig -o /boot/grub/grub.cfg</pre>
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="box doc-block"><h2>initramfs tools</h2><div class="box-content"><ul class="doc-list"><li>Debian or Ubuntu: <code>update-initramfs -u</code></li><li>Arch: <code>mkinitcpio -P</code></li><li>Fedora: <code>dracut --force</code></li><li>Generic dracut: <code>dracut --regenerate-all --force</code></li></ul></div></div>
+            <div class="box doc-block"><h2>boot inspection</h2><div class="box-content"><ul class="doc-list"><li><code>efibootmgr -v</code> lists UEFI entries.</li><li><code>lsblk -f</code> shows UUIDs and filesystems.</li><li><code>cat /proc/cmdline</code> shows kernel args.</li><li><code>journalctl -xb</code> shows current boot logs.</li></ul></div></div>
+          </div>
+        </section>
+
+        <section class="section" id="admin">
+          <h2 class="headline">Sysadmin field notes.</h2>
+          <p class="lead">Most repair work is finding which layer lied to you: firmware, bootloader, kernel, initramfs, root filesystem, init system, display stack, network stack, package database, or user config.</p>
+
+          <div class="two-col">
+            <div class="box doc-block"><h2>filesystem layout</h2><div class="box-content"><table class="listing"><tr><th>path</th><th>role</th></tr><tr><td><span class="path">/boot</span></td><td>kernel, initramfs, bootloader files</td></tr><tr><td><span class="path">/etc</span></td><td>system configuration</td></tr><tr><td><span class="path">/usr</span></td><td>programs, libraries, shared data</td></tr><tr><td><span class="path">/var</span></td><td>logs, cache, databases, spools</td></tr><tr><td><span class="path">/home</span></td><td>user files and per-user config</td></tr><tr><td><span class="path">/run</span></td><td>runtime state since boot</td></tr></table></div></div>
+            <div class="box doc-block"><h2>first checks</h2><div class="box-content"><ul class="doc-list"><li><code>journalctl -xb</code> for current boot errors.</li><li><code>dmesg -T</code> for kernel and driver messages.</li><li><code>lsblk -f</code> for block devices and filesystems.</li><li><code>ip addr</code> and <code>ip route</code> for networking.</li><li><code>systemctl --failed</code> for failed units.</li><li><code>df -h</code> for full filesystems.</li></ul></div></div>
+          </div>
+
+          <div class="box doc-block"><h2>users and permissions</h2><div class="box-content"><table class="listing"><tr><th>task</th><th>command</th></tr><tr><td>show identity</td><td><code>id</code></td></tr><tr><td>change owner</td><td><code>sudo chown user:group file</code></td></tr><tr><td>change permissions</td><td><code>chmod 755 script.sh</code></td></tr><tr><td>show ACL</td><td><code>getfacl file</code></td></tr><tr><td>edit sudo permissions</td><td><code>sudo visudo</code></td></tr><tr><td>add user to group</td><td><code>sudo usermod -aG group user</code></td></tr></table></div></div>
+
+          <div class="ok doc-block"><strong>Rule of thumb:</strong> fix the simplest layer first. Cable, disk, partition, filesystem, bootloader, kernel, initramfs, service, user session. Do not start with the cursed option unless the simple option is boringly ruled out.</div>
+        </section>
+
+        <section class="section" id="commands">
+          <h2 class="headline">Command cribsheet.</h2>
+          <p class="lead">A small shelf of commands that eventually become muscle memory. None of this replaces the manual pages, but it gets you moving.</p>
+
+          <div class="box doc-block"><h2>daily shell</h2><div class="box-content"><table class="listing"><tr><th>task</th><th>command</th></tr><tr><td>find files by name</td><td><code>find . -name "*.conf"</code></td></tr><tr><td>show tree size</td><td><code>du -h --max-depth=1 .</code></td></tr><tr><td>watch a command</td><td><code>watch -n1 free -h</code></td></tr><tr><td>search text</td><td><code>grep -R "needle" /etc</code></td></tr><tr><td>list sockets</td><td><code>ss -tulpn</code></td></tr><tr><td>show open files</td><td><code>lsof -i</code></td></tr><tr><td>process tree</td><td><code>ps auxf</code></td></tr><tr><td>environment</td><td><code>printenv</code></td></tr></table></div></div>
+
+          <div class="two-col">
+            <div class="box doc-block"><h2>network</h2><div class="box-content"><pre>ip addr
+ip route
+resolvectl status
+ping -c 4 1.1.1.1
+tracepath kernel.org
+nmcli dev status
+ss -tulpn</pre></div></div>
+            <div class="box doc-block"><h2>storage</h2><div class="box-content"><pre>lsblk -f
+blkid
+findmnt
+df -h
+sudo smartctl -a /dev/sda
+sudo btrfs filesystem usage /
+sudo zpool status</pre></div></div>
+          </div>
+
+          <div class="box doc-block"><h2>package managers</h2><div class="box-content"><table class="listing"><tr><th>system</th><th>install</th><th>search</th></tr><tr><td>Debian or Ubuntu</td><td><code>sudo apt install pkg</code></td><td><code>apt search pkg</code></td></tr><tr><td>Fedora</td><td><code>sudo dnf install pkg</code></td><td><code>dnf search pkg</code></td></tr><tr><td>Arch</td><td><code>sudo pacman -S pkg</code></td><td><code>pacman -Ss pkg</code></td></tr><tr><td>openSUSE</td><td><code>sudo zypper in pkg</code></td><td><code>zypper se pkg</code></td></tr><tr><td>Void</td><td><code>sudo xbps-install pkg</code></td><td><code>xbps-query -Rs pkg</code></td></tr><tr><td>Gentoo</td><td><code>sudo emerge pkg</code></td><td><code>emerge --search pkg</code></td></tr></table></div></div>
+
+          <div class="box doc-block"><h2>mini lookup shell</h2><div class="box-content"><div class="terminal" id="miniTerm"></div><form class="prompt-row" id="miniForm"><span>lookup$</span><input id="miniInput" autocomplete="off" spellcheck="false" placeholder="try: boot, modules, logs, network, files, perms, graphics, package, help"></form></div></div>
+        </section>
+
+        <section class="section" id="source">
+          <h2 class="headline">Linux source tree map.</h2>
+          <p class="lead">The kernel source tree looks scary until the top-level directories become familiar. Start by reading names, then build paths, then small subsystems.</p>
+
+          <div class="box doc-block"><h2>top level directories</h2><div class="box-content"><table class="listing"><tr><th>directory</th><th>what lives there</th></tr><tr><td><span class="path">arch/</span></td><td>Architecture-specific code: x86, arm64, riscv, powerpc, and more.</td></tr><tr><td><span class="path">block/</span></td><td>Block layer and request handling.</td></tr><tr><td><span class="path">certs/</span></td><td>Certificates used by module signing and trust flows.</td></tr><tr><td><span class="path">drivers/</span></td><td>The giant driver forest: GPU, USB, PCI, net, storage, input, sound, etc.</td></tr><tr><td><span class="path">fs/</span></td><td>Filesystem implementations and VFS glue.</td></tr><tr><td><span class="path">include/</span></td><td>Kernel headers and public UAPI headers.</td></tr><tr><td><span class="path">init/</span></td><td>Early kernel init and startup path.</td></tr><tr><td><span class="path">kernel/</span></td><td>Core scheduler, locking, time, signals, tracing, cgroups, and process machinery.</td></tr><tr><td><span class="path">mm/</span></td><td>Memory management.</td></tr><tr><td><span class="path">net/</span></td><td>Networking stack.</td></tr><tr><td><span class="path">security/</span></td><td>LSM framework and security modules.</td></tr><tr><td><span class="path">tools/</span></td><td>Userspace tooling like perf and testing helpers.</td></tr></table></div></div>
+
+          <div class="box doc-block"><h2>build sketch</h2><div class="box-content"><pre># configure
+make menuconfig
+
+# build with all cores
+make -j$(nproc)
+
+# install modules and kernel
+sudo make modules_install
+sudo make install
+
+# update bootloader if your distro does not do it automatically
+sudo grub-mkconfig -o /boot/grub/grub.cfg</pre></div></div>
+
+          <div class="two-col">
+            <div class="box doc-block"><h2>useful source browsers</h2><div class="box-content"><ul class="doc-list"><li><a href="https://git.kernel.org/">git.kernel.org</a></li><li><a href="https://elixir.bootlin.com/linux/latest/source">Bootlin Elixir</a></li><li><a href="https://github.com/torvalds/linux">Linux mirror on GitHub</a></li></ul></div></div>
+            <div class="box doc-block"><h2>patch culture</h2><div class="box-content"><p>The kernel is developed through mailing lists, maintainers, subsystem trees, review, signed-off patches, and a long memory for broken changes. Read the development process docs before sending patches.</p></div></div>
+          </div>
+        </section>
+
+        <section class="section" id="graphics">
+          <h2 class="headline">Graphics stack notes.</h2>
+          <p class="lead">Linux graphics is a stack: kernel DRM and KMS, Mesa or vendor drivers, display server or compositor, toolkit, desktop shell, and applications. Debug from the bottom upward.</p>
+
+          <div class="box doc-block"><h2>X.Org and Wayland</h2><div class="box-content"><table class="listing"><tr><th>project</th><th>link</th><th>notes</th></tr><tr><td>X.Org</td><td><a href="https://www.x.org/">x.org</a></td><td>Open source implementation of the X Window System.</td></tr><tr><td>X.Org documentation</td><td><a href="https://www.x.org/wiki/Documentation/">X.Org docs</a></td><td>User documentation, protocol specs, client programming references.</td></tr><tr><td>Wayland</td><td><a href="https://wayland.freedesktop.org/">wayland.freedesktop.org</a></td><td>Protocol and architecture intended to replace X11.</td></tr><tr><td>freedesktop.org</td><td><a href="https://www.freedesktop.org/wiki/">freedesktop.org wiki</a></td><td>Desktop interoperability specifications and project hosting.</td></tr><tr><td>Mesa</td><td><a href="https://www.mesa3d.org/">mesa3d.org</a></td><td>Open source OpenGL, Vulkan, and video acceleration drivers.</td></tr><tr><td>DRM docs</td><td><a href="https://docs.kernel.org/gpu/">kernel GPU docs</a></td><td>Kernel graphics and DRM documentation.</td></tr></table></div></div>
+
+          <div class="two-col">
+            <div class="box doc-block"><h2>debug commands</h2><div class="box-content"><pre>lspci -nnk | grep -A3 -E "VGA|3D|Display"
+loginctl show-session "$XDG_SESSION_ID" -p Type
+cat /sys/module/nvidia_drm/parameters/modeset
+journalctl -b | grep -iE "drm|nvidia|amdgpu|i915|wayland|xorg"</pre></div></div>
+            <div class="box doc-block"><h2>common layers</h2><div class="box-content"><ul class="doc-list"><li>Kernel: DRM, KMS, framebuffer, GPU driver.</li><li>Userspace driver: Mesa, libglvnd, vendor OpenGL or Vulkan stack.</li><li>Display server: X.Org or Wayland compositor.</li><li>Shell: KDE Plasma, GNOME Shell, XFCE, sway, etc.</li><li>Portal: xdg-desktop-portal and desktop portal backend.</li></ul></div></div>
+          </div>
+        </section>
+
+        <section class="section" id="distros">
+          <h2 class="headline">Distro families and package notes.</h2>
+          <p class="lead">A distro is a kernel plus userland plus packaging plus policy. The family matters because it decides package tools, service defaults, release rhythm, and documentation culture.</p>
+
+          <div class="box doc-block"><h2>common families</h2><div class="box-content"><table class="listing"><tr><th>family</th><th>docs</th><th>tools</th><th>notes</th></tr><tr><td>Debian / Ubuntu</td><td><a href="https://www.debian.org/doc/">Debian docs</a></td><td><code>apt</code>, <code>dpkg</code></td><td>Huge package universe, stable base, many derivatives.</td></tr><tr><td>Fedora / RHEL</td><td><a href="https://docs.fedoraproject.org/">Fedora docs</a></td><td><code>dnf</code>, <code>rpm</code></td><td>Modern stack, strong SELinux culture, enterprise lineage.</td></tr><tr><td>Arch</td><td><a href="https://wiki.archlinux.org/">Arch Wiki</a></td><td><code>pacman</code>, PKGBUILD</td><td>Rolling release, simple packaging, excellent wiki.</td></tr><tr><td>openSUSE</td><td><a href="https://doc.opensuse.org/">openSUSE docs</a></td><td><code>zypper</code>, YaST</td><td>Great admin tooling, Leap and Tumbleweed tracks.</td></tr><tr><td>Gentoo</td><td><a href="https://wiki.gentoo.org/">Gentoo Wiki</a></td><td><code>emerge</code>, Portage</td><td>Source-based, USE flags, maximal control.</td></tr><tr><td>Void</td><td><a href="https://docs.voidlinux.org/">Void Handbook</a></td><td><code>xbps</code>, runit</td><td>Independent, fast package manager, non-systemd default.</td></tr><tr><td>Slackware</td><td><a href="https://docs.slackware.com/">SlackDocs</a></td><td><code>pkgtool</code></td><td>Traditional Unix-like style, minimal abstraction.</td></tr></table></div></div>
+
+          <div class="three-col">
+            <div class="box doc-block"><h2>stable</h2><div class="box-content"><p>Good for servers, boring laptops, and systems where surprise upgrades should not be part of the hobby.</p></div></div>
+            <div class="box doc-block"><h2>rolling</h2><div class="box-content"><p>Good for new hardware, fresh desktops, and users willing to read package transaction output.</p></div></div>
+            <div class="box doc-block"><h2>source based</h2><div class="box-content"><p>Good for learning internals, tuning options, and understanding what your toolchain is doing.</p></div></div>
+          </div>
+        </section>
+
+        <section class="section" id="links">
+          <h2 class="headline">Links, manuals, and bookmarks.</h2>
+          <p class="lead">A good Linux bookmark folder is worth more than a random tweak script. Start with primary docs, man pages, source browsers, and distro handbooks.</p>
+
+          <div class="two-col">
+            <div class="box doc-block"><h2>core documentation</h2><div class="box-content"><ul class="doc-list"><li><a href="https://docs.kernel.org/">Linux kernel documentation</a></li><li><a href="https://www.kernel.org/">The Linux Kernel Archives</a></li><li><a href="https://man7.org/linux/man-pages/">Linux man-pages project</a></li><li><a href="https://www.gnu.org/software/coreutils/manual/">GNU coreutils manual</a></li><li><a href="https://www.gnu.org/software/bash/manual/">Bash manual</a></li><li><a href="https://www.kernel.org/doc/man-pages/">kernel.org man-pages page</a></li></ul></div></div>
+            <div class="box doc-block"><h2>source and systems</h2><div class="box-content"><ul class="doc-list"><li><a href="https://git.kernel.org/">Kernel git browser</a></li><li><a href="https://elixir.bootlin.com/linux/latest/source">Bootlin Elixir source browser</a></li><li><a href="https://www.busybox.net/">BusyBox</a></li><li><a href="https://systemd.io/">systemd project</a></li><li><a href="https://www.freedesktop.org/wiki/">freedesktop.org</a></li><li><a href="https://www.mesa3d.org/">Mesa 3D Graphics Library</a></li></ul></div></div>
+          </div>
+
+          <div class="two-col">
+            <div class="box doc-block"><h2>distribution docs</h2><div class="box-content"><ul class="doc-list"><li><a href="https://www.debian.org/doc/">Debian documentation</a></li><li><a href="https://debian-handbook.info/">Debian Administrator's Handbook</a></li><li><a href="https://docs.fedoraproject.org/">Fedora documentation</a></li><li><a href="https://wiki.archlinux.org/">Arch Wiki</a></li><li><a href="https://doc.opensuse.org/">openSUSE documentation</a></li><li><a href="https://docs.voidlinux.org/">Void Linux Handbook</a></li></ul></div></div>
+            <div class="box doc-block"><h2>desktop graphics</h2><div class="box-content"><ul class="doc-list"><li><a href="https://www.x.org/">X.Org</a></li><li><a href="https://www.x.org/wiki/Documentation/">X.Org documentation</a></li><li><a href="https://wayland.freedesktop.org/">Wayland</a></li><li><a href="https://docs.kernel.org/gpu/">Kernel GPU documentation</a></li><li><a href="https://www.freedesktop.org/wiki/Software/PulseAudio/">PulseAudio</a></li><li><a href="https://pipewire.org/">PipeWire</a></li></ul></div></div>
+          </div>
+
+          <div class="box doc-block"><h2>tux artwork</h2><div class="box-content"><p>The header image links to <a href="https://commons.wikimedia.org/wiki/File:Tux.svg">Tux.svg on Wikimedia Commons</a>. The image is loaded directly from Wikimedia's static upload host.</p></div></div>
+        </section>
+      </main>
+    </div>
+
+    <footer class="footer">
+      penguin-pages.html / static Linux reference / no cookies / no trackers / valid enough for a hand-kept site <span class="blink">_</span>
+    </footer>
+  </div>
+
+  <script>
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+    var sections = Array.prototype.slice.call(document.querySelectorAll('.section'));
+    var dockLinks = Array.prototype.slice.call(document.querySelectorAll('[data-tab-link]'));
+    var search = document.getElementById('search');
+    var blocks = Array.prototype.slice.call(document.querySelectorAll('.doc-block'));
+    var clock = document.getElementById('clock');
+    var ticker = document.getElementById('ticker');
+    var miniTerm = document.getElementById('miniTerm');
+    var miniForm = document.getElementById('miniForm');
+    var miniInput = document.getElementById('miniInput');
+
+    function showTab(id) {
+      tabs.forEach(function(tab) {
+        tab.classList.toggle('active', tab.getAttribute('data-tab') === id);
+      });
+      sections.forEach(function(section) {
+        section.classList.toggle('active', section.id === id);
+      });
+      window.location.hash = id;
+      search.value = '';
+      filterBlocks('');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        showTab(tab.getAttribute('data-tab'));
+      });
+    });
+
+    dockLinks.forEach(function(link) {
+      link.addEventListener('click', function(event) {
+        event.preventDefault();
+        showTab(link.getAttribute('data-tab-link'));
+      });
+    });
+
+    function filterBlocks(query) {
+      var q = query.toLowerCase();
+      blocks.forEach(function(block) {
+        var activeParent = block.closest('.section.active');
+        if (!activeParent) return;
+        var visible = !q || block.textContent.toLowerCase().indexOf(q) !== -1;
+        block.style.display = visible ? '' : 'none';
+      });
+    }
+
+    search.addEventListener('input', function() {
+      filterBlocks(search.value);
+    });
+
+    document.getElementById('clearSearch').addEventListener('click', function() {
+      search.value = '';
+      filterBlocks('');
+      search.focus();
+    });
+
+    document.getElementById('printPage').addEventListener('click', function() {
+      window.print();
+    });
+
+    function tickClock() {
+      var now = new Date();
+      clock.textContent = 'local time: ' + now.toLocaleString();
+    }
+    tickClock();
+    setInterval(tickClock, 1000);
+
+    var tickerLines = [
+      'reading documentation index ... ok',
+      'checking modules.dep ... ok',
+      'scanning man-pages ... ok',
+      'syncing HOWTO shelf ... ok',
+      'grepping dmesg notes ... ok',
+      'updating package table ... ok',
+      'refreshing boot notes ... ok'
+    ];
+    var tickerIndex = 0;
+    setInterval(function() {
+      ticker.textContent = tickerLines[tickerIndex];
+      tickerIndex = (tickerIndex + 1) % tickerLines.length;
+    }, 1900);
+
+    function termLine(text) {
+      if (!miniTerm) return;
+      var div = document.createElement('div');
+      div.textContent = text;
+      miniTerm.appendChild(div);
+      miniTerm.scrollTop = miniTerm.scrollHeight;
+    }
+
+    var lookup = {
+      help: ['topics: boot, modules, logs, network, files, perms, graphics, package, kernel, tux'],
+      boot: ['boot: firmware -> bootloader -> kernel -> initramfs -> rootfs -> init -> services -> login'],
+      modules: ['modules: lsmod, modinfo, modprobe, modprobe -r, /lib/modules/$(uname -r)'],
+      logs: ['logs: journalctl -xb, dmesg -T, /var/log, systemctl --failed'],
+      network: ['network: ip addr, ip route, ss -tulpn, resolvectl status, ping, tracepath'],
+      files: ['files: /etc config, /usr programs, /var state, /home users, /run runtime'],
+      perms: ['perms: user/group/other, chmod, chown, umask, ACLs, capabilities'],
+      graphics: ['graphics: kernel DRM/KMS, Mesa or vendor driver, X.Org or Wayland compositor, desktop shell'],
+      package: ['package tools: apt, dnf, pacman, zypper, xbps, emerge, pkgtool'],
+      kernel: ['kernel: scheduler, mm, vfs, net, drivers, arch, security, ipc'],
+      tux: ['tux: Linux mascot. Header artwork links to Wikimedia Commons.']
+    };
+
+    if (miniTerm && miniForm && miniInput) {
+      termLine('Penguin Pages lookup shell');
+      termLine('type help for topics');
+      miniForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        var input = miniInput.value.trim().toLowerCase();
+        if (!input) return;
+        termLine('lookup$ ' + input);
+        if (input === 'clear') {
+          miniTerm.innerHTML = '';
+        } else if (lookup[input]) {
+          lookup[input].forEach(termLine);
+        } else {
+          termLine('no entry: ' + input + ' -- try help');
+        }
+        miniInput.value = '';
+      });
+    }
+
+    var hash = window.location.hash.replace('#', '');
+    if (hash && document.getElementById(hash)) {
+      showTab(hash);
+    }
+  </script>
+</body>
+</html>
