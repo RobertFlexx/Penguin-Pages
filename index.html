@@ -895,37 +895,39 @@ journalctl -b | grep -iE "drm|nvidia|amdgpu|i915|wayland|xorg"</pre></div></div>
   </div>
 
   <script>
-    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
-    var sections = Array.prototype.slice.call(document.querySelectorAll('.section'));
-    var dockLinks = Array.prototype.slice.call(document.querySelectorAll('[data-tab-link]'));
-    var search = document.getElementById('search');
-    var blocks = Array.prototype.slice.call(document.querySelectorAll('.doc-block'));
-    var clock = document.getElementById('clock');
-    var ticker = document.getElementById('ticker');
-    var miniTerm = document.getElementById('miniTerm');
-    var miniForm = document.getElementById('miniForm');
-    var miniInput = document.getElementById('miniInput');
+    let tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+    let sections = Array.prototype.slice.call(document.querySelectorAll('.section'));
+    let dockLinks = Array.prototype.slice.call(document.querySelectorAll('[data-tab-link]'));
+    let search = document.getElementById('search');
+    let blocks = Array.prototype.slice.call(document.querySelectorAll('.doc-block'));
+    let clock = document.getElementById('clock');
+    let ticker = document.getElementById('ticker');
+    let miniTerm = document.getElementById('miniTerm');
+    let miniForm = document.getElementById('miniForm');
+    let miniInput = document.getElementById('miniInput');
 
     function showTab(id) {
-      tabs.forEach(function(tab) {
+      tabs.forEach((tab) => {
         tab.classList.toggle('active', tab.getAttribute('data-tab') === id);
       });
-      sections.forEach(function(section) {
+      
+      sections.forEach((section) =>  {
         section.classList.toggle('active', section.id === id);
       });
+      
       window.location.hash = id;
       search.value = '';
       filterBlocks('');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    tabs.forEach(function(tab) {
+    tabs.forEach((tab) => {
       tab.addEventListener('click', function() {
         showTab(tab.getAttribute('data-tab'));
       });
     });
 
-    dockLinks.forEach(function(link) {
+    dockLinks.forEach((link) => {
       link.addEventListener('click', function(event) {
         event.preventDefault();
         showTab(link.getAttribute('data-tab-link'));
@@ -933,11 +935,11 @@ journalctl -b | grep -iE "drm|nvidia|amdgpu|i915|wayland|xorg"</pre></div></div>
     });
 
     function filterBlocks(query) {
-      var q = query.toLowerCase();
-      blocks.forEach(function(block) {
-        var activeParent = block.closest('.section.active');
+      let q = query.toLowerCase();
+      blocks.forEach((block) => {
+        let activeParent = block.closest('.section.active');
         if (!activeParent) return;
-        var visible = !q || block.textContent.toLowerCase().indexOf(q) !== -1;
+        let visible = !q || block.textContent.toLowerCase().indexOf(q) !== -1;
         block.style.display = visible ? '' : 'none';
       });
     }
@@ -946,24 +948,25 @@ journalctl -b | grep -iE "drm|nvidia|amdgpu|i915|wayland|xorg"</pre></div></div>
       filterBlocks(search.value);
     });
 
-    document.getElementById('clearSearch').addEventListener('click', function() {
+    document.getElementById('clearSearch').addEventListener('click', () => {
       search.value = '';
       filterBlocks('');
       search.focus();
     });
 
-    document.getElementById('printPage').addEventListener('click', function() {
+    document.getElementById('printPage').addEventListener('click', () => {
       window.print();
     });
 
     function tickClock() {
-      var now = new Date();
-      clock.textContent = 'local time: ' + now.toLocaleString();
+      let now = new Date();
+      clock.textContent = `local time: ${now.toLocaleString()}`;
     }
+    
     tickClock();
     setInterval(tickClock, 1000);
 
-    var tickerLines = [
+    let tickerLines = [
       'reading documentation index ... ok',
       'checking modules.dep ... ok',
       'scanning man-pages ... ok',
@@ -972,21 +975,22 @@ journalctl -b | grep -iE "drm|nvidia|amdgpu|i915|wayland|xorg"</pre></div></div>
       'updating package table ... ok',
       'refreshing boot notes ... ok'
     ];
-    var tickerIndex = 0;
-    setInterval(function() {
+    
+    let tickerIndex = 0;
+    setInterval(() => {
       ticker.textContent = tickerLines[tickerIndex];
       tickerIndex = (tickerIndex + 1) % tickerLines.length;
     }, 1900);
 
     function termLine(text) {
       if (!miniTerm) return;
-      var div = document.createElement('div');
+      let div = document.createElement('div');
       div.textContent = text;
       miniTerm.appendChild(div);
       miniTerm.scrollTop = miniTerm.scrollHeight;
     }
 
-    var lookup = {
+    let lookup = {
       help: ['topics: boot, modules, logs, network, files, perms, graphics, package, kernel, tux'],
       boot: ['boot: firmware -> bootloader -> kernel -> initramfs -> rootfs -> init -> services -> login'],
       modules: ['modules: lsmod, modinfo, modprobe, modprobe -r, /lib/modules/$(uname -r)'],
@@ -1003,9 +1007,9 @@ journalctl -b | grep -iE "drm|nvidia|amdgpu|i915|wayland|xorg"</pre></div></div>
     if (miniTerm && miniForm && miniInput) {
       termLine('Penguin Pages lookup shell');
       termLine('type help for topics');
-      miniForm.addEventListener('submit', function(event) {
+      miniForm.addEventListener('submit', (event) => {
         event.preventDefault();
-        var input = miniInput.value.trim().toLowerCase();
+        let input = miniInput.value.trim().toLowerCase();
         if (!input) return;
         termLine('lookup$ ' + input);
         if (input === 'clear') {
@@ -1019,7 +1023,7 @@ journalctl -b | grep -iE "drm|nvidia|amdgpu|i915|wayland|xorg"</pre></div></div>
       });
     }
 
-    var hash = window.location.hash.replace('#', '');
+    let hash = window.location.hash.replace('#', '');
     if (hash && document.getElementById(hash)) {
       showTab(hash);
     }
