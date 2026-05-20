@@ -34,6 +34,7 @@ Penguin Pages is a static Linux reference site with an early web documentation s
 It contains notes and links for Linux kernel documentation, boot repair, system administration, common commands, the Linux source tree, graphics stacks, distribution families, and related open source projects.
 
 The site is built for GitHub Pages and is meant to be fast, simple, readable, and easy to edit.
+This site also includes an alternative exherbo documentation, meant to be more intuitive and readable than [the one here.](https://www.exherbo.org/docs/install-guide.html)(official)
 
 ---
 
