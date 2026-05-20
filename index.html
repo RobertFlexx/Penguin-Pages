@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Penguin Pages is an unofficial Linux reference site with kernel, boot, sysadmin, source tree, graphics, filesystem, init, security, audio, virtualization, distribution notes, and project contributor information.">
+    <meta name="description" content="Penguin Pages is an unofficial Linux reference site with kernel, boot, sysadmin, source tree, graphics, filesystem, init, security, audio, virtualization, distribution notes, Exherbo KDE/NVIDIA setup notes, and project contributor information.">
     <title>Penguin Pages - Unofficial Linux Reference</title>
     <link rel="stylesheet" href="style.css">
   </head>
@@ -53,6 +53,7 @@
         <button class="tab" data-tab="troubleshooting">troubleshooting</button>
         <button class="tab" data-tab="glossary">glossary</button>
         <button class="tab" data-tab="downloads">downloads</button>
+        <button class="tab" data-tab="exherbo">exherbo</button>
         <button class="tab" data-tab="distros">distros</button>
         <button class="tab" data-tab="links">links</button>
       </nav>
@@ -85,6 +86,7 @@
                 <li><a data-tab-link="audio" href="#audio">Audio stack</a></li>
                 <li><a data-tab-link="troubleshooting" href="#troubleshooting">Troubleshooting</a></li>
                 <li><a data-tab-link="downloads" href="#downloads">Distro downloads</a></li>
+                <li><a data-tab-link="exherbo" href="#exherbo">Exherbo field guide</a></li>
               </ul>
             </div>
           </div>
@@ -122,6 +124,10 @@
               <br>
               <a href="https://wiki.archlinux.org/">Arch Wiki</a>
               <br>
+              <a href="https://www.exherbo.org/docs/index.html">Exherbo docs</a>
+              <br>
+              <a href="https://paludis.exherbo.org/clients/cave.html">Paludis cave</a>
+              <br>
               <a href="https://www.gnu.org/software/coreutils/manual/">coreutils</a>
             </div>
           </div>
@@ -148,6 +154,9 @@
               <span class="badge">HOWTO</span>
               <span class="badge">X11</span>
               <span class="badge">Wayland</span>
+              <span class="badge">Exherbo</span>
+              <span class="badge">Paludis</span>
+              <span class="badge">cave</span>
               <span class="badge">GPL-3.0</span>
             </div>
           </div>
@@ -949,6 +958,11 @@ sudo zpool status
                     <td>Gentoo</td>
                     <td><code>sudo emerge pkg</code></td>
                     <td><code>emerge --search pkg</code></td>
+                  </tr>
+                  <tr>
+                    <td>Exherbo</td>
+                    <td><code>sudo cave resolve --execute pkg</code></td>
+                    <td><code>cave search pkg</code></td>
                   </tr>
                 </table>
               </div>
@@ -1994,6 +2008,738 @@ qemu-system-x86_64 --version
             </div>
           </section>
 
+
+          <section class="section" id="exherbo">
+            <h2 class="headline">Exherbo field guide: from stage tarball to KDE Wayland.</h2>
+            <p class="lead">Exherbo is a source-based Linux distribution for people who want control, clean packaging, and a system they actually understand. This page is a practical alternative manual: install order, Paludis habits, kernel work, NVIDIA, KDE Plasma, Flatpak, boot repair, and the small desktop pieces that make the machine feel complete.</p>
+
+            <div class="warning doc-block">
+              <strong>Read this first:</strong>
+              this is not official Exherbo policy. It is a practical desktop guide written from a real KDE Plasma Wayland setup with systemd, GRUB EFI, a custom kernel, NVIDIA proprietary drivers, PipeWire, Flatpak, and a minimal-but-complete KDE package set. Always read the official docs too, then use this page as the sane checklist.
+            </div>
+
+            <div class="box doc-block">
+              <h2>official and alternate docs shelf</h2>
+              <div class="box-content">
+                <table class="listing">
+                  <tr>
+                    <th>resource</th>
+                    <th>link</th>
+                    <th>what to use it for</th>
+                  </tr>
+                  <tr>
+                    <td>Exherbo docs index</td>
+                    <td><a href="https://www.exherbo.org/docs/index.html">exherbo.org/docs</a></td>
+                    <td>Official starting point for install guide, expectations, Paludis, KDE notes, systemd, multiarch, and developer docs.</td>
+                  </tr>
+                  <tr>
+                    <td>Official install guide</td>
+                    <td><a href="https://www.exherbo.org/docs/install-guide.html">install-guide.html</a></td>
+                    <td>Stage tarball, disk layout, chroot, fstab, kernel, bootloader, hostname, users, and post-install tasks.</td>
+                  </tr>
+                  <tr>
+                    <td>KDE on Exherbo</td>
+                    <td><a href="https://www.exherbo.org/docs/kde.html">kde.html</a></td>
+                    <td>Official KDE set overview. Useful, but too short for a full daily-driver Plasma setup.</td>
+                  </tr>
+                  <tr>
+                    <td>Paludis cave</td>
+                    <td><a href="https://paludis.exherbo.org/clients/cave.html">cave client docs</a></td>
+                    <td>Main package manager command reference. Use <code>cave help</code>, <code>cave show</code>, <code>cave search</code>, <code>cave resolve</code>, and <code>cave sync</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>cave resolve</td>
+                    <td><a href="https://paludis.exherbo.org/clients/cave-resolve.html">cave-resolve.html</a></td>
+                    <td>How Paludis previews and executes install, reinstall, uninstall, and world actions.</td>
+                  </tr>
+                  <tr>
+                    <td>Exherbo packages</td>
+                    <td><a href="https://summer.exherbo.org/">summer.exherbo.org</a></td>
+                    <td>Package browser for checking package names, repositories, versions, options, and masks.</td>
+                  </tr>
+                  <tr>
+                    <td>Exherbo GitLab</td>
+                    <td><a href="https://gitlab.exherbo.org/exherbo">gitlab.exherbo.org</a></td>
+                    <td>Repositories, exheres, issues, and source for the distribution.</td>
+                  </tr>
+                  <tr>
+                    <td>Multiarch docs</td>
+                    <td><a href="https://www.exherbo.org/docs/multiarch/multiarch.html">multiarch migration</a></td>
+                    <td>Only touch this when you are deliberately adding another architecture target. Native Steam's 32-bit needs are not a casual one-line option.</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>what makes Exherbo different?</h2>
+              <div class="box-content">
+                <ul class="doc-list">
+                  <li>It is source-based. Many installs are real builds, not quick binary downloads.</li>
+                  <li>It uses Paludis and <code>cave</code>, not Portage/emerge.</li>
+                  <li>Package options are explicit. A small option change can cause same-version rebuilds.</li>
+                  <li>Package names are not always Gentoo names. Search instead of guessing.</li>
+                  <li>It expects you to understand boot, kernel, options, services, and config protection.</li>
+                  <li>It rewards notes, patience, and checking one layer at a time.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>install map</h2>
+              <div class="box-content">
+                <ol>
+                  <li>Boot a live Linux system with network access.</li>
+                  <li>Partition the disk: EFI System Partition, root, optional home, optional swap.</li>
+                  <li>Format and mount the filesystems under <span class="path">/mnt/exherbo</span>.</li>
+                  <li>Download and extract the Exherbo stage tarball.</li>
+                  <li>Write <span class="path">/etc/fstab</span>.</li>
+                  <li>Bind mount <span class="path">/dev</span>, <span class="path">/sys</span>, and <span class="path">/proc</span>, then chroot.</li>
+                  <li>Configure Paludis, sync repositories, and set desktop options.</li>
+                  <li>Build or install a kernel, initramfs, firmware, and bootloader.</li>
+                  <li>Install core desktop pieces: systemd, dbus, NetworkManager, SDDM, KDE, PipeWire, portals, power tools, fonts, icons, and Flatpak.</li>
+                  <li>Install NVIDIA drivers if needed, set kernel arguments, rebuild initramfs, and regenerate GRUB.</li>
+                  <li>Boot into X11 first if Wayland is questionable. Then fix Wayland.</li>
+                  <li>Audit the system before calling it daily-drivable.</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>partitioning example: simple UEFI desktop</h2>
+              <div class="box-content">
+                <p>This mirrors a practical desktop layout: FAT32 ESP mounted at <span class="path">/boot</span>, ext4 root, and swap. Adjust device names before running anything.</p>
+                <pre>
+# example only; replace disk and partition names
+lsblk -f
+sudo cfdisk /dev/nvme0n1
+
+# suggested layout
+# p1  EFI System  1G-2G    vfat    /boot
+# p2  swap        4G-16G   swap    none
+# p3  Linux root  rest     ext4    /
+
+sudo mkfs.vfat -F32 /dev/nvme0n1p1
+sudo mkswap /dev/nvme0n1p2
+sudo mkfs.ext4 -L exherbo-root /dev/nvme0n1p3
+
+sudo mkdir -p /mnt/exherbo
+sudo mount /dev/nvme0n1p3 /mnt/exherbo
+sudo mkdir -p /mnt/exherbo/boot
+sudo mount /dev/nvme0n1p1 /mnt/exherbo/boot
+sudo swapon /dev/nvme0n1p2
+                </pre>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>fstab pattern</h2>
+              <div class="box-content">
+                <pre>
+# get UUIDs
+blkid
+
+# /mnt/exherbo/etc/fstab
+UUID=&lt;root-uuid&gt;  /      ext4  defaults,noatime  0 1
+UUID=&lt;esp-uuid&gt;   /boot  vfat  defaults           0 2
+UUID=&lt;swap-uuid&gt;  none   swap  sw                 0 0
+                </pre>
+                <p class="small">Use UUIDs, not moving names like <code>/dev/sda</code>, especially on multi-boot machines.</p>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>bootstrap and chroot</h2>
+              <div class="box-content">
+                <pre>
+cd /mnt/exherbo
+
+# use the current stage URL from the official install guide
+sudo curl -O https://stages.exherbo.org/x86_64-pc-linux-gnu/exherbo-x86_64-pc-linux-gnu-gcc-current.tar.xz
+sudo tar xJpf exherbo-x86_64-pc-linux-gnu-gcc-current.tar.xz
+
+sudo mount -o rbind /dev /mnt/exherbo/dev
+sudo mount -o rbind /sys /mnt/exherbo/sys
+sudo mount -t proc none /mnt/exherbo/proc
+sudo cp /etc/resolv.conf /mnt/exherbo/etc/resolv.conf
+
+sudo env -i TERM="$TERM" SHELL=/bin/bash HOME=/root chroot /mnt/exherbo /bin/bash
+source /etc/profile
+export PS1="(exherbo chroot) $PS1"
+                </pre>
+                <p class="small">The <code>rbind</code> on <span class="path">/dev</span> matters. Paludis and device-heavy builds can behave badly if the chroot is mounted lazily.</p>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>Paludis basics</h2>
+              <div class="box-content">
+                <table class="listing">
+                  <tr>
+                    <th>task</th>
+                    <th>command</th>
+                    <th>notes</th>
+                  </tr>
+                  <tr>
+                    <td>sync repositories</td>
+                    <td><code>sudo cave sync</code></td>
+                    <td>Do this before a serious install or world update.</td>
+                  </tr>
+                  <tr>
+                    <td>search package names</td>
+                    <td><code>cave search plasma</code></td>
+                    <td>Search first. Do not assume Gentoo package names.</td>
+                  </tr>
+                  <tr>
+                    <td>inspect options</td>
+                    <td><code>cave show kde/plasma-desktop</code></td>
+                    <td>Shows options, suggestions, masks, repository, and reasons.</td>
+                  </tr>
+                  <tr>
+                    <td>preview install</td>
+                    <td><code>sudo cave resolve world</code></td>
+                    <td>Shows what would happen. This is the safe read-only step.</td>
+                  </tr>
+                  <tr>
+                    <td>execute install</td>
+                    <td><code>sudo cave resolve --execute world</code></td>
+                    <td>Actually builds/installs. Do not interrupt core packages.</td>
+                  </tr>
+                  <tr>
+                    <td>remove package</td>
+                    <td><code>sudo cave uninstall distribution/steam</code></td>
+                    <td>Useful when a package was only an experiment.</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>options.conf: sane KDE/NVIDIA desktop base</h2>
+              <div class="box-content">
+                <p>This is the style of config used for a working Plasma 6 Wayland desktop with NVIDIA, Flatpak, portals, PipeWire, and systemd. Keep it small; do not globally enable every pretty-looking flag.</p>
+                <pre>
+# /etc/paludis/options.conf
+
+# General desktop features
+*/* X wayland
+
+# Build behavior
+*/* build_options: symbols=split jobs=8 -dwarf_compress -recommended_tests -trace work=tidyup
+
+# Hardware and input stack
+*/* video_cards: nvidia
+*/* input_devices: libinput
+
+# KDE shutdown/reboot/unlock helpers
+sys-apps/systemd polkit
+
+# EFI GRUB
+sys-boot/grub efi GRUB_PLATFORMS: efi-64 pc
+
+# NVIDIA driver stack
+x11-drivers/nvidia-drivers kernel-open tools wayland
+
+# Mesa needs at least one Gallium/video driver selected on this setup.
+# This does not load the nouveau kernel driver or replace proprietary NVIDIA.
+x11-dri/mesa video_drivers: nouveau
+
+# Archive support
+app-arch/libarchive zstd
+
+# Qt5 tooling for older KDE/theme packages
+x11-libs/qtbase:5 sql sqlite
+
+# KDE image and QR support
+kde-frameworks/prison scanner pdf417
+kde-frameworks/kimageformats avif
+
+# Flatpak and portals
+# This avoids the Qt6 libportal private-header trap seen on some Exherbo setups.
+sys-libs/libportal PROVIDERS: gtk3 -gtk4 -qt5 -qt6
+
+# Audio integration
+media-sound/pulseaudio bluetooth
+sys-sound/alsa-plugins pulseaudio
+media-libs/libcanberra pulseaudio
+
+# Bluetooth desktop integration
+net-wireless/bluez obex
+
+# GTK, tray, and device integration
+dev-libs/at-spi2-core gobject-introspection
+x11-libs/gtk+:3 gobject-introspection
+core/json-glib gobject-introspection
+dev-libs/libgusb gobject-introspection
+
+# Optional UI polish
+app-misc/fastfetch X wayland opengl vulkan libdrm dbus
+kde/kinfocenter usb
+                </pre>
+                <p class="small">If <code>cave resolve world</code> shows only same-version <code>r</code> rebuilds after editing options, that usually means option drift, not corruption. It wants to rebuild packages so their recorded build options match the current file.</p>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>package selection: minimal but not barebones KDE</h2>
+              <div class="box-content">
+                <pre>
+sudo cave resolve --execute \
+  kde/plasma-desktop \
+  kde/plasma-workspace \
+  kde/kwin \
+  kde/kwin-x11 \
+  kde/systemsettings \
+  kde/dolphin \
+  kde/konsole \
+  kde/kate \
+  kde/ark \
+  kde/gwenview \
+  kde/kcalc \
+  kde/spectacle \
+  kde/okular \
+  kde/kfind \
+  kde/kmenuedit \
+  kde/kdebugsettings \
+  kde/kinfocenter \
+  kde/kio-extras \
+  kde/kio-admin \
+  kde/kio-fuse \
+  kde/ffmpegthumbs \
+  kde/kdegraphics-thumbnailers \
+  kde/breeze \
+  kde/qqc2-breeze-style \
+  kde/kde-gtk-config \
+  kde/plasma-workspace-wallpapers \
+  kde/ocean-sound-theme \
+  kde/plasma-systemmonitor \
+  kde/ksystemstats \
+  kde/filelight \
+  kde/colord-kde \
+  kde/plasma-disks \
+  kde/partitionmanager \
+  kde/plasma-nm \
+  kde/plasma-pa \
+  kde/powerdevil \
+  kde/kscreen \
+  kde/sddm-kcm \
+  kde/flatpak-kcm
+                </pre>
+                <p class="small">Use <code>cave search</code> if any package name fails. Exherbo package names can move, slots matter, and repositories differ.</p>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>daily desktop base packages</h2>
+              <div class="box-content">
+                <pre>
+sudo cave resolve --execute \
+  sys-auth/sddm \
+  net-apps/NetworkManager \
+  sys-apps/power-profiles-daemon \
+  sys-apps/upower \
+  net-wireless/bluez \
+  media/pipewire \
+  sys-apps/xdg-desktop-portal \
+  kde/xdg-desktop-portal-kde \
+  sys-apps/flatpak \
+  sys-apps/xdg-dbus-proxy \
+  sys-libs/libportal \
+  x11-server/xwayland \
+  x11-libs/qtwayland \
+  fonts/noto \
+  fonts/noto-emoji \
+  fonts/dejavu \
+  fonts/liberation-fonts \
+  x11-apps/xdg-user-dirs
+                </pre>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>services to enable</h2>
+              <div class="box-content">
+                <pre>
+sudo systemctl enable sddm
+sudo systemctl enable NetworkManager
+sudo systemctl enable power-profiles-daemon
+sudo systemctl enable upower
+sudo systemctl enable bluetooth
+sudo systemctl enable systemd-timesyncd
+
+# dbus and polkit are usually static/activation based; status matters more than enable
+systemctl status dbus polkit --no-pager
+                </pre>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>kernel: desktop-ready checklist</h2>
+              <div class="box-content">
+                <table class="listing">
+                  <tr>
+                    <th>area</th>
+                    <th>kernel options/modules</th>
+                    <th>why it matters</th>
+                  </tr>
+                  <tr>
+                    <td>modules</td>
+                    <td><code>CONFIG_MODULES</code>, <code>depmod</code>, <code>modprobe</code></td>
+                    <td>NVIDIA, FUSE, Bluetooth, gamepads, filesystems, and many drivers depend on modules.</td>
+                  </tr>
+                  <tr>
+                    <td>desktop graphics</td>
+                    <td><code>CONFIG_DRM</code>, <code>CONFIG_DRM_KMS_HELPER</code>, <code>CONFIG_DRM_FBDEV_EMULATION</code></td>
+                    <td>Needed for modern display handoff, Wayland, and smooth boot graphics.</td>
+                  </tr>
+                  <tr>
+                    <td>Flatpak/AppImage</td>
+                    <td><code>CONFIG_FUSE_FS=m</code>, <code>CONFIG_CUSE=m</code></td>
+                    <td>Flatpak, AppImages, portals, and desktop sandboxes expect <span class="path">/dev/fuse</span>.</td>
+                  </tr>
+                  <tr>
+                    <td>containers and VPN</td>
+                    <td><code>CONFIG_OVERLAY_FS</code>, <code>CONFIG_TUN</code>, <code>CONFIG_WIREGUARD</code>, namespaces, cgroups</td>
+                    <td>Containers, Steam runtimes, VPN tools, and sandboxed apps expect these.</td>
+                  </tr>
+                  <tr>
+                    <td>gaming/input</td>
+                    <td><code>CONFIG_JOYSTICK_XPAD</code>, <code>CONFIG_HID_NINTENDO</code>, <code>CONFIG_HID_PLAYSTATION</code></td>
+                    <td>Gamepads and USB input devices.</td>
+                  </tr>
+                  <tr>
+                    <td>filesystems</td>
+                    <td>ext4, btrfs, exFAT, NTFS3, VFAT, ISO9660, UDF, squashfs</td>
+                    <td>Normal disks, Windows drives, USB media, ISOs, and compressed images.</td>
+                  </tr>
+                  <tr>
+                    <td>virtualization</td>
+                    <td><code>CONFIG_KVM</code>, <code>CONFIG_KVM_INTEL</code> or <code>CONFIG_KVM_AMD</code></td>
+                    <td>QEMU/KVM, virt-manager, Android containers, and VM testing.</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>building missing FUSE after the fact</h2>
+              <div class="box-content">
+                <p>If <code>modprobe fuse</code> says the module does not exist and Flatpak complains, build it from the same kernel tree used for the running kernel.</p>
+                <pre>
+cd /usr/src/linux
+
+./scripts/config --module FUSE_FS
+./scripts/config --module CUSE
+./scripts/config --disable FUSE_PASSTHROUGH
+./scripts/config --disable FUSE_IO_URING
+./scripts/config --disable FUSE_DAX
+
+make olddefconfig
+make -j"$(nproc)" fs/fuse/fuse.ko fs/fuse/cuse.ko
+sudo make M=fs/fuse modules_install
+
+KVER="$(uname -r)"
+sudo depmod "$KVER"
+sudo modprobe fuse
+ls -lah /dev/fuse
+                </pre>
+                <p class="small">If FUSE passthrough causes undefined symbols while building only the module, disable passthrough/io_uring unless you are intentionally wiring those dependencies.</p>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>NVIDIA Wayland setup</h2>
+              <div class="box-content">
+                <p>The practical NVIDIA rule: kernel modules, userspace libraries, EGL/Wayland pieces, GRUB flags, modprobe config, initramfs, and KWin must all agree. Mixing a half-installed driver stack is how you get llvmpipe, black screens, or a slideshow compositor.</p>
+                <pre>
+# install/build driver package according to your repositories
+sudo cave resolve --execute x11-drivers/nvidia-drivers
+
+# verify modules exist
+find "/lib/modules/$(uname -r)" -name 'nvidia*.ko*'
+
+# /etc/modprobe.d/nvidia.conf
+sudo tee /etc/modprobe.d/nvidia.conf &gt;/dev/null &lt;&lt;'EOF'
+options nvidia_drm modeset=1 fbdev=1
+options nvidia NVreg_PreserveVideoMemoryAllocations=1
+options nvidia NVreg_DynamicPowerManagement=0x02
+softdep nvidia post: nvidia-uvm
+blacklist nouveau
+EOF
+                </pre>
+                <p>GRUB kernel arguments:</p>
+                <pre>
+nvidia-drm.modeset=1 nvidia-drm.fbdev=1
+                </pre>
+                <p>Verify after boot:</p>
+                <pre>
+nvidia-smi
+glxinfo -B
+vulkaninfo --summary
+
+sudo sh -c '
+echo -n "modeset="; cat /sys/module/nvidia_drm/parameters/modeset
+echo -n "fbdev="; cat /sys/module/nvidia_drm/parameters/fbdev
+'
+                </pre>
+                <p class="small">Good values are <code>modeset=Y</code> and <code>fbdev=Y</code>. If sysfs files are root-readable only, a normal user may see empty output.</p>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>initramfs and GRUB safety sweep</h2>
+              <div class="box-content">
+                <pre>
+KVER="$(uname -r)"
+
+sudo depmod "$KVER"
+sudo dracut --force "/boot/initramfs-${KVER}.img" "$KVER"
+sudo cp -av "/boot/initramfs-${KVER}.img" /boot/initramfs.img
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+
+find /boot/EFI -maxdepth 4 -type f | sort
+grep -n 'nvidia-drm' /boot/grub/grub.cfg
+grep -n 'initrd' /boot/grub/grub.cfg
+                </pre>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>Wayland, portals, PipeWire, and Discord screenshare</h2>
+              <div class="box-content">
+                <p>For KDE Wayland, screen sharing is not just Discord. It needs PipeWire, WirePlumber, xdg-desktop-portal, and the KDE portal backend. Flatpak apps also use the portal path.</p>
+                <pre>
+systemctl --user status pipewire wireplumber pipewire-pulse xdg-desktop-portal --no-pager
+ps aux | grep -E 'pipewire|wireplumber|xdg-desktop-portal' | grep -v grep
+echo "$XDG_CURRENT_DESKTOP"
+echo "$XDG_SESSION_TYPE"
+
+pactl info
+wpctl status
+ls /usr/share/xdg-desktop-portal/portals
+                </pre>
+                <p class="small">PipeWire services can show as disabled while sockets are enabled and the services are active. That is normal socket activation, not failure.</p>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>Flatpak and Steam</h2>
+              <div class="box-content">
+                <p>Use Flatpak Steam unless you intentionally want to build out Exherbo multiarch/32-bit userspace. The native Steam installer package can install the launcher but still fail with missing 32-bit <code>libc.so.6</code>.</p>
+                <pre>
+flatpak remotes
+flatpak install flathub com.valvesoftware.Steam
+flatpak run com.valvesoftware.Steam
+
+# optional permissions for a games folder
+flatpak override --user --filesystem=/path/to/games com.valvesoftware.Steam
+                </pre>
+                <p class="small">If native Steam says <code>libc.so.6</code> is missing, check with <code>find /usr /lib /lib32 /usr/lib32 -name libc.so.6 -exec file {} \;</code>. If only 64-bit libc exists, native Steam will not run yet.</p>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>UI polish that stops KDE feeling half-installed</h2>
+              <div class="box-content">
+                <table class="listing">
+                  <tr>
+                    <th>symptom</th>
+                    <th>install/check</th>
+                    <th>notes</th>
+                  </tr>
+                  <tr>
+                    <td>missing settings pages</td>
+                    <td><code>kde-frameworks/kcmutils</code>, <code>kde/kscreen</code>, <code>kde/powerdevil</code>, <code>kde/sddm-kcm</code></td>
+                    <td>KCMs are the System Settings modules.</td>
+                  </tr>
+                  <tr>
+                    <td>missing network GUI</td>
+                    <td><code>kde/plasma-nm</code>, <code>net-apps/NetworkManager</code></td>
+                    <td>Enable NetworkManager service.</td>
+                  </tr>
+                  <tr>
+                    <td>missing audio applet</td>
+                    <td><code>kde/plasma-pa</code>, <code>kde/pulseaudio-qt</code></td>
+                    <td>PipeWire can still expose PulseAudio compatibility.</td>
+                  </tr>
+                  <tr>
+                    <td>bad icons</td>
+                    <td><code>kde-frameworks/breeze-icons</code>, <code>gnome-desktop/adwaita-icon-theme</code>, <code>x11-themes/hicolor-icon-theme</code></td>
+                    <td>Some apps expect Adwaita or hicolor even on KDE.</td>
+                  </tr>
+                  <tr>
+                    <td>GTK apps look wrong</td>
+                    <td><code>x11-themes/breeze-gtk</code>, <code>kde/kde-gtk-config</code></td>
+                    <td>Set GTK theme from System Settings.</td>
+                  </tr>
+                  <tr>
+                    <td>no wallpapers/sounds</td>
+                    <td><code>kde/plasma-workspace-wallpapers</code>, <code>kde/ocean-sound-theme</code></td>
+                    <td>Small packages that make a desktop feel complete.</td>
+                  </tr>
+                  <tr>
+                    <td>bare home directory</td>
+                    <td><code>x11-apps/xdg-user-dirs</code></td>
+                    <td>Run <code>xdg-user-dirs-update</code> to create Documents, Music, Videos, Templates, and Public.</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>theme refresh commands</h2>
+              <div class="box-content">
+                <pre>
+lookandfeeltool -a org.kde.breeze.desktop 2&gt;/dev/null || true
+plasma-apply-colorscheme BreezeDark 2&gt;/dev/null || true
+plasma-apply-desktoptheme breeze-dark 2&gt;/dev/null || true
+plasma-apply-cursortheme breeze_cursors 2&gt;/dev/null || true
+
+kbuildsycoca6 --noincremental
+gtk-update-icon-cache -f /usr/share/icons/hicolor 2&gt;/dev/null || true
+gtk-update-icon-cache -f /usr/share/icons/breeze 2&gt;/dev/null || true
+gtk-update-icon-cache -f /usr/share/icons/Adwaita 2&gt;/dev/null || true
+                </pre>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>CONFIG_PROTECT files</h2>
+              <div class="box-content">
+                <p>Exherbo protects local config files. When package updates provide a new config, Paludis may leave files like <span class="path">/etc/._cfg0000_hostname</span>. Do not delete blindly; inspect and merge.</p>
+                <pre>
+sudo find /etc -name '._cfg*' -print
+
+for f in $(sudo find /etc -name '._cfg*' -print); do
+  echo "===== $f ====="
+  target="$(dirname "$f")/$(basename "$f" | sed 's/^._cfg[0-9]*_//')"
+  echo "TARGET: $target"
+  sudo diff -u "$target" "$f" 2&gt;/dev/null || sudo cat "$f"
+done
+                </pre>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>world updates without panic</h2>
+              <div class="box-content">
+                <pre>
+sudo cave sync
+
+# preview only
+sudo cave resolve world
+
+# execute only after reading the plan
+sudo cave resolve --execute world
+                </pre>
+                <table class="listing">
+                  <tr>
+                    <th>letter</th>
+                    <th>meaning</th>
+                    <th>dummy translation</th>
+                  </tr>
+                  <tr>
+                    <td><code>n</code></td>
+                    <td>new install</td>
+                    <td>Paludis wants to add a package.</td>
+                  </tr>
+                  <tr>
+                    <td><code>u</code></td>
+                    <td>upgrade</td>
+                    <td>Version changes.</td>
+                  </tr>
+                  <tr>
+                    <td><code>r</code></td>
+                    <td>reinstall/rebuild</td>
+                    <td>Same version, usually option drift or rebuild needed.</td>
+                  </tr>
+                  <tr>
+                    <td><code>&lt;</code></td>
+                    <td>remove/purge candidate</td>
+                    <td>Read carefully before taking.</td>
+                  </tr>
+                </table>
+                <p class="small">If <code>world</code> shows same-version <code>r</code> rebuilds after editing <span class="path">options.conf</span>, it is usually not broken. It is trying to make installed package metadata match the current desired options.</p>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>post-update audit</h2>
+              <div class="box-content">
+                <pre>
+nvidia-smi
+pactl info
+powerprofilesctl
+systemctl --failed
+journalctl -b -p 3 --no-pager
+
+sudo sh -c '
+echo -n "modeset="; cat /sys/module/nvidia_drm/parameters/modeset
+echo -n "fbdev="; cat /sys/module/nvidia_drm/parameters/fbdev
+'
+                </pre>
+                <p>Good signs for this style of desktop:</p>
+                <ul class="doc-list">
+                  <li><code>nvidia-smi</code> sees the GPU and KDE processes.</li>
+                  <li><code>pactl info</code> says <code>PulseAudio (on PipeWire ...)</code>.</li>
+                  <li><code>powerprofilesctl</code> works and can set performance.</li>
+                  <li><code>XDG_SESSION_TYPE=wayland</code> inside Plasma Wayland.</li>
+                  <li><code>xdg-desktop-portal</code> and <code>xdg-desktop-portal-kde</code> are running.</li>
+                  <li>No priority error spam in <code>journalctl -b -p 3</code>.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>common Exherbo desktop failures</h2>
+              <div class="box-content">
+                <table class="listing">
+                  <tr>
+                    <th>problem</th>
+                    <th>likely layer</th>
+                    <th>check</th>
+                  </tr>
+                  <tr>
+                    <td>Wayland black screen</td>
+                    <td>NVIDIA KMS, EGL/Wayland userspace, KWin, SDDM session</td>
+                    <td><code>nvidia-smi</code>, <code>journalctl -b | grep -iE 'nvidia|kwin|drm'</code>, GRUB flags.</td>
+                  </tr>
+                  <tr>
+                    <td>Flatpak fails with FUSE</td>
+                    <td>kernel config/modules</td>
+                    <td><code>modprobe fuse</code>, <code>ls -lah /dev/fuse</code>, <code>find /lib/modules/$(uname -r) -name fuse.ko*</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>Discord cannot screenshare</td>
+                    <td>PipeWire/portal stack</td>
+                    <td><code>systemctl --user status pipewire wireplumber xdg-desktop-portal</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>System Settings missing pages</td>
+                    <td>KCM packages missing</td>
+                    <td><code>find /usr/share/applications -iname 'kcm_*.desktop'</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>SDDM session missing</td>
+                    <td>session desktop file</td>
+                    <td><code>ls /usr/share/wayland-sessions /usr/share/xsessions</code>.</td>
+                  </tr>
+                  <tr>
+                    <td>Native Steam missing libc</td>
+                    <td>32-bit userspace/multiarch</td>
+                    <td>Use Flatpak Steam unless deliberately building multiarch.</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="ok doc-block">
+              <strong>Daily-driver standard:</strong>
+              boot files exist, GRUB has the right kernel/initramfs, NVIDIA says modeset/fbdev are enabled, KDE Wayland logs in, PipeWire works, portals run, NetworkManager is enabled, power profiles work, Flatpak runs, no config-protect leftovers remain, and <code>journalctl -b -p 3</code> is clean.
+            </div>
+          </section>
+
+
           <section class="section" id="distros">
             <h2 class="headline">Distro families and package notes.</h2>
             <p class="lead">A distro is a kernel plus userland plus packaging plus policy. The family matters because it decides package tools, service defaults, release rhythm, and documentation culture.</p>
@@ -2079,6 +2825,12 @@ qemu-system-x86_64 --version
                     <td><a href="https://wiki.gentoo.org/">Gentoo Wiki</a></td>
                     <td><code>emerge</code>, Portage</td>
                     <td>People who want source-based control, USE flags, custom builds, and deep system learning.</td>
+                  </tr>
+                  <tr>
+                    <td>Exherbo</td>
+                    <td><a href="https://www.exherbo.org/docs/index.html">Exherbo docs</a></td>
+                    <td><code>cave</code>, Paludis, exheres</td>
+                    <td>Advanced users who want a source-based system with explicit options, clean package metadata, and full control over boot, kernel, drivers, and desktop composition.</td>
                   </tr>
                   <tr>
                     <td>Alpine</td>
