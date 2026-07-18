@@ -31,10 +31,10 @@
 
 Penguin Pages is a static Linux reference site with an early web documentation style.
 
-It contains notes and links for Linux kernel documentation, boot repair, system administration, common commands, the Linux source tree, graphics stacks, distribution families, and related open source projects.
+It contains notes and links for Linux kernel documentation, boot repair, system administration, common commands, the Linux source tree, graphics stacks, desktops, audio, virtualization, troubleshooting, distribution families, and related open source projects.
 
 The site is built for GitHub Pages and is meant to be fast, simple, readable, and easy to edit.
-This site also includes an alternative exherbo documentation, meant to be more intuitive and readable than [the one here.](https://www.exherbo.org/docs/install-guide.html)(official)
+The site also includes an unofficial Exherbo companion guide. Its most-tested path is x86-64 with systemd, UEFI GRUB, a custom kernel, and KDE Wayland, but it also documents AMD/Radeon, Intel, nouveau, proprietary NVIDIA, virtual and headless systems, alternate desktops, laptops, networking, audio, and recovery. Use it alongside the [official installation guide](https://www.exherbo.org/docs/install-guide.html), not as a replacement for current distribution policy.
 
 ---
 
@@ -61,6 +61,16 @@ The design is intentionally old-school: simple boxes, small text, plain colors, 
 * **Commands** - shell, storage, networking, process, and package manager examples
 * **Source Tree** - overview of the Linux kernel source directories
 * **Graphics** - DRM/KMS, Mesa, X.Org, Wayland, and desktop stack notes
+* **DEs/WMs** - desktop environments, window managers, and session composition
+* **Filesystems** - filesystem selection, mount options, and repair notes
+* **Init** - systemd, OpenRC, runit, s6, dinit, and SysVinit
+* **Security** - permissions, access control, firewalls, and SSH hygiene
+* **Audio** - ALSA, PipeWire, WirePlumber, PulseAudio, and JACK
+* **Virtualization** - containers, QEMU/KVM, libvirt, and related tools
+* **Troubleshooting** - layer-oriented boot, network, graphics, and storage flows
+* **Glossary** - concise definitions for common Linux terms
+* **Downloads** - distribution choices and official download sources
+* **Exherbo** - installation, Paludis, hardware profiles, sessions, and recovery
 * **Distros** - common distribution families and package tools
 * **Links** - external Linux documentation and project links
 
@@ -87,6 +97,8 @@ The design is intentionally old-school: simple boxes, small text, plain colors, 
 ```text
 Penguin-Pages/
 ├── index.html
+├── script.js
+├── style.css
 ├── README.md
 └── LICENSE
 ```

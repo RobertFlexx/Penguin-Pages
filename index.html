@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Penguin Pages is an unofficial Linux reference site with kernel, boot, sysadmin, source tree, graphics, filesystem, init, security, audio, virtualization, distribution notes, Exherbo KDE/NVIDIA setup notes, and project contributor information.">
+    <meta name="description" content="Penguin Pages is an unofficial Linux reference site with kernel, boot, sysadmin, source tree, graphics, filesystem, init, security, audio, virtualization, distribution notes, hardware-neutral Exherbo setup notes, and project contributor information.">
     <title>Penguin Pages - Unofficial Linux Reference</title>
     <link rel="stylesheet" href="style.css">
   </head>
@@ -1151,6 +1151,20 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
               </div>
             </div>
 
+            <div class="box doc-block">
+              <h2>common Linux GPU paths</h2>
+              <div class="box-content">
+                <table class="listing">
+                  <tr><th>hardware</th><th>kernel side</th><th>userspace side</th></tr>
+                  <tr><td>modern AMD</td><td><code>amdgpu</code> plus firmware</td><td>Mesa RadeonSI for OpenGL and commonly RADV for Vulkan.</td></tr>
+                  <tr><td>older Radeon</td><td><code>radeon</code> plus firmware; some transition hardware can use AMDGPU</td><td>Generation-appropriate Mesa Radeon driver.</td></tr>
+                  <tr><td>Intel</td><td><code>i915</code>, or <code>xe</code> on supported newer hardware</td><td>Mesa Crocus/Iris for OpenGL and ANV for Vulkan.</td></tr>
+                  <tr><td>NVIDIA</td><td><code>nouveau</code> or the proprietary modules, not both for one GPU</td><td>Mesa for nouveau or matching vendor libraries.</td></tr>
+                  <tr><td>virtual machine</td><td><code>virtio_gpu</code>, QXL, VMware, Hyper-V, or VirtualBox guest driver</td><td>Mesa virgl or hypervisor integration matching the virtual display model.</td></tr>
+                </table>
+              </div>
+            </div>
+
             <div class="two-col">
               <div class="box doc-block">
                 <h2>debug commands</h2>
@@ -1158,8 +1172,10 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
                   <pre>
 lspci -nnk | grep -A3 -E "VGA|3D|Display"
 loginctl show-session "$XDG_SESSION_ID" -p Type
-cat /sys/module/nvidia_drm/parameters/modeset
-journalctl -b | grep -iE "drm|nvidia|amdgpu|i915|wayland|xorg"
+lsmod | grep -E "amdgpu|radeon|i915|xe|nouveau|nvidia|virtio_gpu"
+glxinfo -B
+vulkaninfo --summary
+journalctl -b | grep -iE "drm|nvidia|nouveau|amdgpu|radeon|i915|xe|virtio|wayland|xorg"
                   </pre>
                 </div>
               </div>
@@ -1284,6 +1300,13 @@ journalctl -b | grep -iE "drm|nvidia|amdgpu|i915|wayland|xorg"
                     <td><a href="https://dwm.suckless.org/">dwm.suckless.org</a></td>
                   </tr>
                 </table>
+              </div>
+            </div>
+
+            <div class="box doc-block">
+              <h2>what a standalone session still needs</h2>
+              <div class="box-content">
+                <p>A window manager draws and arranges windows; it is not automatically a complete desktop. Plan for a terminal, launcher, notifications, policy-authentication agent, screen locker, clipboard, file manager, network and audio controls, wallpaper/output tools, and an xdg-desktop-portal backend. Wayland compositors may provide display and input configuration themselves, while X11 sessions commonly use separate tools.</p>
               </div>
             </div>
           </section>
@@ -2010,12 +2033,27 @@ qemu-system-x86_64 --version
 
 
           <section class="section" id="exherbo">
-            <h2 class="headline">Exherbo field guide: from stage tarball to KDE Wayland.</h2>
-            <p class="lead">Exherbo is a source-based Linux distribution for people who want control, clean packaging, and a system they actually understand. This page is a practical alternative manual: install order, Paludis habits, kernel work, NVIDIA, KDE Plasma, Flatpak, boot repair, and the small desktop pieces that make the machine feel complete. This is only for KDE Plasma setup, more will come soon.</p>
+            <h2 class="headline">Exherbo field guide: from stage tarball to a complete system.</h2>
+            <p class="lead">Exherbo is a source-based Linux distribution for people who want control, clean packaging, and a system they actually understand. This practical companion covers install order, Paludis habits, kernels, firmware, AMD, Intel, NVIDIA and virtual graphics, console and graphical systems, several desktop styles, laptops, virtual machines, recovery, and daily maintenance.</p>
 
             <div class="warning doc-block">
               <strong>Read this first:</strong>
-              this is not official Exherbo policy. It is a practical desktop guide written from a real KDE Plasma Wayland setup with systemd, GRUB EFI, a custom kernel, NVIDIA proprietary drivers, PipeWire, Flatpak, and a minimal-but-complete KDE package set. Always read the official docs too, then use this page as the sane checklist.
+              this is not official Exherbo policy and package names can change. The most-tested path is x86-64, systemd, UEFI GRUB, a custom kernel, and KDE Plasma Wayland; the hardware and session profiles below explain where other systems diverge. Check <code>cave search</code>, <code>cave show</code>, and the official docs before executing a package plan.
+            </div>
+
+            <div class="box doc-block" id="exherbo-profiles">
+              <h2>choose the machine profile before configuring it</h2>
+              <div class="box-content">
+                <table class="listing">
+                  <tr><th>decision</th><th>common choices</th><th>what changes</th></tr>
+                  <tr><td>system role</td><td>headless, VM guest, workstation, laptop</td><td>Headless systems can omit graphics, a display manager, portals, and desktop packages.</td></tr>
+                  <tr><td>graphics</td><td>AMD, older Radeon, Intel, nouveau, proprietary NVIDIA, virtual GPU</td><td>Kernel driver, firmware, Mesa video/Vulkan driver, and sometimes kernel arguments.</td></tr>
+                  <tr><td>session</td><td>console, X11, Wayland</td><td>Wayland needs a compositor and usually a portal backend; X11 needs an X server and window manager.</td></tr>
+                  <tr><td>desktop</td><td>KDE, GNOME, XFCE, LXQt, standalone WM/compositor</td><td>Desktop set, display manager, policy agent, portal, settings tools, and applets.</td></tr>
+                  <tr><td>boot</td><td>UEFI or legacy BIOS; GRUB or another loader</td><td>This guide's worked example is UEFI with the ESP mounted at <span class="path">/boot</span>. Do not mix commands for a separate <span class="path">/boot/efi</span> layout.</td></tr>
+                </table>
+                <p class="small">Use one primary GPU profile first. Hybrid laptops are a deliberate combination, not a reason to enable every driver globally.</p>
+              </div>
             </div>
 
             <div class="box doc-block">
@@ -2097,18 +2135,25 @@ qemu-system-x86_64 --version
                   <li>Bind mount <span class="path">/dev</span>, <span class="path">/sys</span>, and <span class="path">/proc</span>, then chroot.</li>
                   <li>Configure Paludis, sync repositories, and set desktop options.</li>
                   <li>Build or install a kernel, initramfs, firmware, and bootloader.</li>
-                  <li>Install core desktop pieces: systemd, dbus, NetworkManager, SDDM, KDE, PipeWire, portals, power tools, fonts, icons, and Flatpak.</li>
-                  <li>Install NVIDIA drivers if needed, set kernel arguments, rebuild initramfs, and regenerate GRUB.</li>
-                  <li>Boot into X11 first if Wayland is questionable. Then fix Wayland.</li>
+                  <li>Create the system identity, root password, normal user, locale, timezone, networking, and privilege policy.</li>
+                  <li>Choose a console, desktop, or window-manager profile and only its required services.</li>
+                  <li>Choose the matching GPU kernel driver, firmware, Mesa or vendor userspace, and portal stack.</li>
+                  <li>Keep a known-good kernel and boot into the simpler session first if a new Wayland setup is questionable.</li>
                   <li>Audit the system before calling it daily-drivable.</li>
                 </ol>
               </div>
+            </div>
+
+            <div class="ok doc-block">
+              <strong>Command context:</strong>
+              commands before the first reboot run either on the live system with <code>sudo</code> as shown or inside the chroot as root without <code>sudo</code>. Commands explicitly described as after first boot run as the normal user and use <code>sudo</code> for administrative work.
             </div>
 
             <div class="box doc-block">
               <h2>partitioning example: simple UEFI desktop</h2>
               <div class="box-content">
                 <p>This mirrors a practical desktop layout: FAT32 ESP mounted at <span class="path">/boot</span>, ext4 root, and swap. Adjust device names before running anything.</p>
+                <div class="warning"><strong>Destructive:</strong> formatting erases the selected partitions. Back up important data, confirm the disk with <code>lsblk -f</code>, and do not copy these device names blindly.</div>
                 <pre>
 # example only; replace disk and partition names
 lsblk -f
@@ -2151,23 +2196,84 @@ UUID=&lt;swap-uuid&gt;  none   swap  sw                 0 0
             <div class="box doc-block">
               <h2>bootstrap and chroot</h2>
               <div class="box-content">
+                <p>On the live system, confirm the architecture, clock, network, boot mode, and stage integrity before extraction. Obtain the checksum or signature from the official stage source rather than trusting a copied value.</p>
                 <pre>
+uname -m
+date -u
+ip route
+test -d /sys/firmware/efi &amp;&amp; echo UEFI || echo BIOS
+
 cd /mnt/exherbo
 
 # use the current stage URL from the official install guide
 sudo curl -O https://stages.exherbo.org/x86_64-pc-linux-gnu/exherbo-x86_64-pc-linux-gnu-gcc-current.tar.xz
+# Save the separately obtained official checksum as stage.sha256, then verify it.
+sha256sum -c stage.sha256
 sudo tar xJpf exherbo-x86_64-pc-linux-gnu-gcc-current.tar.xz
 
 sudo mount -o rbind /dev /mnt/exherbo/dev
+sudo mount --make-rslave /mnt/exherbo/dev
 sudo mount -o rbind /sys /mnt/exherbo/sys
+sudo mount --make-rslave /mnt/exherbo/sys
 sudo mount -t proc none /mnt/exherbo/proc
-sudo cp /etc/resolv.conf /mnt/exherbo/etc/resolv.conf
+
+# Do not follow a resolver symlink from the target into a nonexistent /run path.
+readlink -f /etc/resolv.conf
+sudo rm -f /mnt/exherbo/etc/resolv.conf
+sudo cp -L /etc/resolv.conf /mnt/exherbo/etc/resolv.conf
 
 sudo env -i TERM="$TERM" SHELL=/bin/bash HOME=/root chroot /mnt/exherbo /bin/bash
 source /etc/profile
 export PS1="(exherbo chroot) $PS1"
                 </pre>
                 <p class="small">The <code>rbind</code> on <span class="path">/dev</span> matters. Paludis and device-heavy builds can behave badly if the chroot is mounted lazily.</p>
+              </div>
+            </div>
+
+            <div class="box doc-block" id="exherbo-base-system">
+              <h2>base-system identity and first login</h2>
+              <div class="box-content">
+                <p>Run this part inside the chroot as root. Exact locale and administrative groups are policy choices; inspect the files and installed tools instead of assuming another distribution's defaults.</p>
+                <pre>
+# identity and time
+printf '%s\n' exherbo-host &gt; /etc/hostname
+ln -sf /usr/share/zoneinfo/Region/City /etc/localtime
+printf '%s\n' '127.0.0.1 localhost' '127.0.1.1 exherbo-host' &gt; /etc/hosts
+
+# inspect available locales and configure the one you actually use
+locale -a
+locale
+
+# credentials; use the user-management tools supplied by the stage
+passwd
+useradd -m -s /bin/bash alice
+passwd alice
+id alice
+                </pre>
+                <p>Install and configure either <code>sudo</code> or <code>doas</code>, then test it from a second root shell before closing the first. Add only the groups required by installed software; modern logind, udev, and polkit setups usually do not require broad legacy groups for ordinary desktop access.</p>
+              </div>
+            </div>
+
+            <div class="box doc-block" id="exherbo-firmware">
+              <h2>firmware and CPU microcode</h2>
+              <div class="box-content">
+                <p>Firmware is required by many AMD GPUs, Wi-Fi adapters, Bluetooth controllers, and Intel audio DSPs. CPU microcode is separate and should be loaded early. Package categories and split packages can change, so locate them rather than guessing.</p>
+                <pre>
+cave search firmware
+cave search microcode
+cave show category/firmware-package
+
+# after installation and reboot
+journalctl -b -k | grep -iE 'firmware|microcode|amdgpu|radeon|iwlwifi|rtw|ath|sof'
+dmesg | grep -i 'failed to load'
+                </pre>
+                <table class="listing">
+                  <tr><th>hardware</th><th>usual requirement</th><th>failure clue</th></tr>
+                  <tr><td>modern AMD GPU</td><td>AMDGPU kernel driver plus matching Radeon firmware</td><td>Display stays basic or logs name a missing <code>amdgpu/*.bin</code> file.</td></tr>
+                  <tr><td>older Radeon</td><td><code>radeon</code> driver and firmware; some transition-era cards can use AMDGPU experimentally</td><td>Wrong driver binds, acceleration is absent, or display initialization fails.</td></tr>
+                  <tr><td>Intel Wi-Fi/audio</td><td>device firmware; SOF firmware for some DSP audio</td><td>Interface or sound card is absent while PCI hardware is visible.</td></tr>
+                  <tr><td>Intel/AMD CPU</td><td>matching microcode package and early initramfs/bootloader loading</td><td>Kernel log lacks a current microcode update line.</td></tr>
+                </table>
               </div>
             </div>
 
@@ -2182,7 +2288,7 @@ export PS1="(exherbo chroot) $PS1"
                   </tr>
                   <tr>
                     <td>sync repositories</td>
-                    <td><code>sudo cave sync</code></td>
+                    <td><code>cave sync</code></td>
                     <td>Do this before a serious install or world update.</td>
                   </tr>
                   <tr>
@@ -2197,17 +2303,17 @@ export PS1="(exherbo chroot) $PS1"
                   </tr>
                   <tr>
                     <td>preview install</td>
-                    <td><code>sudo cave resolve world</code></td>
+                    <td><code>cave resolve world</code></td>
                     <td>Shows what would happen. This is the safe read-only step.</td>
                   </tr>
                   <tr>
                     <td>execute install</td>
-                    <td><code>sudo cave resolve --execute world</code></td>
+                    <td><code>cave resolve --execute world</code></td>
                     <td>Actually builds/installs. Do not interrupt core packages.</td>
                   </tr>
                   <tr>
                     <td>remove package</td>
-                    <td><code>sudo cave uninstall distribution/steam</code></td>
+                    <td><code>cave uninstall distribution/steam</code></td>
                     <td>Useful when a package was only an experiment.</td>
                   </tr>
                 </table>
@@ -2215,20 +2321,20 @@ export PS1="(exherbo chroot) $PS1"
             </div>
 
             <div class="box doc-block">
-              <h2>options.conf: sane KDE/NVIDIA desktop base</h2>
+              <h2>options.conf: common desktop base</h2>
               <div class="box-content">
-                <p>This is the style of config used for a working Plasma 6 Wayland desktop with NVIDIA, Flatpak, portals, PipeWire, and systemd. Keep it small; do not globally enable every pretty-looking flag.</p>
+                <p>Start with shared session and input requirements, then add exactly one graphics snippet from the next table. Keep global options small; do not enable every attractive option or copy hardware settings from an unrelated machine.</p>
                 <pre>
 # /etc/paludis/options.conf
 
-# General desktop features
-*/* X wayland
+# Add only the session features in use.
+# */* X          # X.Org or Xwayland
+# */* wayland    # Wayland compositor/toolkit support
 
 # Build behavior
 */* build_options: symbols=split jobs=8 -dwarf_compress -recommended_tests -trace work=tidyup
 
-# Hardware and input stack
-*/* video_cards: nvidia
+# Input stack
 */* input_devices: libinput
 
 # KDE shutdown/reboot/unlock helpers
@@ -2237,16 +2343,10 @@ sys-apps/systemd polkit
 # EFI GRUB
 sys-boot/grub efi GRUB_PLATFORMS: efi-64 pc
 
-# NVIDIA driver stack
-x11-drivers/nvidia-drivers kernel-open tools wayland
-
-# Mesa needs at least one Gallium/video driver selected on this setup.
-# This does not load the nouveau kernel driver or replace proprietary NVIDIA.
-x11-dri/mesa video_drivers: nouveau
-
 # Archive support
 app-arch/libarchive zstd
 
+# KDE profile additions: omit or replace for another desktop
 # Qt5 tooling for older KDE/theme packages
 x11-libs/qtbase:5 sql sqlite
 
@@ -2280,11 +2380,36 @@ kde/kinfocenter usb
               </div>
             </div>
 
+            <div class="box doc-block" id="exherbo-gpu-options">
+              <h2>graphics profile: choose one starting point</h2>
+              <div class="box-content">
+                <table class="listing">
+                  <tr><th>GPU</th><th>Paludis direction</th><th>kernel and userspace</th></tr>
+                  <tr><td>modern AMD</td><td><code>x11-dri/mesa video_drivers: radeon</code></td><td><code>CONFIG_DRM_AMDGPU</code>, firmware, Mesa RadeonSI, and a separately selected Vulkan implementation if needed.</td></tr>
+                  <tr><td>older Radeon R300-R500</td><td><code>x11-dri/mesa video_drivers: r300</code></td><td><code>CONFIG_DRM_RADEON</code>, matching firmware, and the generation-appropriate Mesa driver.</td></tr>
+                  <tr><td>older Radeon HD 2000+</td><td><code>x11-dri/mesa video_drivers: radeon</code></td><td><code>CONFIG_DRM_RADEON</code> or supported AMDGPU transition path, firmware, and Mesa. Identify the exact generation first.</td></tr>
+                  <tr><td>Intel Gen4-7</td><td><code>x11-dri/mesa video_drivers: crocus</code></td><td>Normally <code>CONFIG_DRM_I915</code>; verify support for the exact generation.</td></tr>
+                  <tr><td>Intel Gen8+</td><td><code>x11-dri/mesa video_drivers: iris</code></td><td><code>CONFIG_DRM_I915</code> or <code>CONFIG_DRM_XE</code> where documented, with a separately selected Vulkan implementation if needed.</td></tr>
+                  <tr><td>NVIDIA with nouveau</td><td><code>x11-dri/mesa video_drivers: nouveau</code></td><td><code>CONFIG_DRM_NOUVEAU</code>, Mesa, and required firmware. Do not blacklist nouveau.</td></tr>
+                  <tr><td>NVIDIA proprietary</td><td>Install <code>x11-drivers/nvidia-drivers</code>; this is not a Mesa video-driver choice</td><td>Matching vendor kernel modules and userspace. Do not enable the nouveau kernel driver for the same device.</td></tr>
+                  <tr><td>QEMU/KVM guest</td><td><code>x11-dri/mesa video_drivers: virtio-gpu</code></td><td><code>CONFIG_DRM_VIRTIO_GPU</code>, Mesa virgl support, and virtio input where used.</td></tr>
+                  <tr><td>headless/console</td><td>Do not add desktop graphics globally</td><td>Keep simpledrm/EFI framebuffer for a local console if useful; omit X11, Wayland, Mesa, and a display manager unless another package needs them.</td></tr>
+                </table>
+                <pre>
+# Confirm names and available choices on this repository snapshot.
+cave show x11-dri/mesa
+cave search vulkan
+cave resolve world
+                </pre>
+                <p class="small">Paludis option names are repository metadata, not universal constants. If a listed token is unavailable, use the choices shown by <code>cave show</code>. Hardware detection comes first: <code>lspci -nnk | grep -A3 -E 'VGA|3D|Display'</code>.</p>
+              </div>
+            </div>
+
             <div class="box doc-block">
               <h2>package selection: minimal but not barebones KDE</h2>
               <div class="box-content">
                 <pre>
-sudo cave resolve --execute \
+cave resolve --execute \
   kde/plasma-desktop \
   kde/plasma-workspace \
   kde/kwin \
@@ -2330,10 +2455,10 @@ sudo cave resolve --execute \
             </div>
 
             <div class="box doc-block">
-              <h2>daily desktop base packages</h2>
+              <h2>tested KDE daily desktop base packages</h2>
               <div class="box-content">
                 <pre>
-sudo cave resolve --execute \
+cave resolve --execute \
   sys-auth/sddm \
   net-apps/NetworkManager \
   sys-apps/power-profiles-daemon \
@@ -2356,20 +2481,73 @@ sudo cave resolve --execute \
               </div>
             </div>
 
+            <div class="box doc-block" id="exherbo-desktops">
+              <h2>other desktops and standalone sessions</h2>
+              <div class="box-content">
+                <p>Package sets vary across repositories. Search for the desktop, inspect its set or core package, preview the plan, and then add the integration pieces appropriate to that session.</p>
+                <table class="listing">
+                  <tr><th>session</th><th>discover/install direction</th><th>integration to verify</th></tr>
+                  <tr><td>GNOME</td><td><code>cave search gnome</code>; inspect the GNOME desktop/shell set</td><td>GDM or TTY launch, GNOME portal backend, settings daemon, NetworkManager, PipeWire, and Wayland/X11 session files.</td></tr>
+                  <tr><td>XFCE</td><td><code>cave search xfce</code>; start with the core desktop</td><td>LightDM or TTY launch, an appropriate GTK portal backend, polkit agent, notification service, power manager, and X11.</td></tr>
+                  <tr><td>LXQt</td><td><code>cave search lxqt</code>; inspect the LXQt set</td><td>SDDM or TTY launch, Qt platform support, polkit agent, notification service, and the selected X11 or Wayland window manager.</td></tr>
+                  <tr><td>i3 or another X11 WM</td><td><code>cave search i3</code> plus X.Org</td><td>Terminal, launcher, bar, notification daemon, polkit agent, locker, compositor if wanted, portal backend, and an <span class="path">xsessions</span> entry.</td></tr>
+                  <tr><td>sway or another wlroots compositor</td><td><code>cave search sway</code> plus Wayland/Xwayland as needed</td><td><code>xdg-desktop-portal-wlr</code> or current equivalent, notification daemon, polkit agent, locker, clipboard tools, and PipeWire for capture.</td></tr>
+                  <tr><td>console/headless</td><td>No desktop set</td><td>TTY login, networking, time sync, optional SSH, and no display manager.</td></tr>
+                </table>
+                <pre>
+cave search gnome        # substitute xfce, lxqt, i3, sway, etc.
+cave show category/candidate-package-or-set
+cave resolve category/candidate-package-or-set
+
+# A display manager is optional. Inspect installed sessions:
+find /usr/share/xsessions /usr/share/wayland-sessions -maxdepth 1 -type f 2&gt;/dev/null
+                </pre>
+                <p class="small">Choose portal backends for the active desktop and inspect which interfaces each provides. Some combinations are intentional: for example, a wlroots screen-capture backend may coexist with GTK for file choosing. Unplanned competing backends can still cause slow startup or the wrong chooser.</p>
+              </div>
+            </div>
+
             <div class="box doc-block">
               <h2>services to enable</h2>
               <div class="box-content">
+                <p>Enable only services installed for the chosen profile. A console server does not need SDDM, Bluetooth, or desktop power management; GNOME commonly uses GDM instead of SDDM.</p>
                 <pre>
-sudo systemctl enable sddm
-sudo systemctl enable NetworkManager
-sudo systemctl enable power-profiles-daemon
-sudo systemctl enable upower
-sudo systemctl enable bluetooth
-sudo systemctl enable systemd-timesyncd
+systemctl enable sddm
+systemctl enable NetworkManager
+systemctl enable power-profiles-daemon
+systemctl enable upower
+systemctl enable bluetooth
+systemctl enable systemd-timesyncd
 
 # dbus and polkit are usually static/activation based; status matters more than enable
 systemctl status dbus polkit --no-pager
                 </pre>
+              </div>
+            </div>
+
+            <div class="box doc-block" id="exherbo-network">
+              <h2>networking: installation, desktop, and headless systems</h2>
+              <div class="box-content">
+                <p>NetworkManager is a convenient desktop default. A small server may instead use systemd-networkd or another deliberate stack. Do not run multiple DHCP clients or resolver managers on the same interface.</p>
+                <pre>
+# identify the device, driver, radio state, address, route, then DNS
+ip -br link
+lspci -nnk | grep -A3 -iE 'ethernet|network'
+rfkill list
+ip -br address
+ip route
+resolvectl status 2&gt;/dev/null || cat /etc/resolv.conf
+
+# NetworkManager examples after its service is running
+nmcli device status
+nmcli device wifi list
+nmcli device wifi connect 'SSID' --ask
+nmcli connection show
+
+# separate routing from DNS failures
+ping -c 3 1.1.1.1
+getent hosts exherbo.org
+                </pre>
+                <p>For a remote/headless first boot, install an SSH server, add a tested public key, verify the firewall and service from the local console, and only then rely on remote access. Never expose password-based root SSH as a shortcut around user setup.</p>
               </div>
             </div>
 
@@ -2421,6 +2599,47 @@ systemctl status dbus polkit --no-pager
               </div>
             </div>
 
+            <div class="box doc-block" id="exherbo-kernel-boot">
+              <h2>kernel, initramfs, and UEFI GRUB contract</h2>
+              <div class="box-content">
+                <p>Inside an installation chroot, <code>uname -r</code> reports the live medium's kernel. Derive the target version from the kernel you built and use that same value for modules, initramfs, and bootloader checks.</p>
+                <pre>
+# Before using the commands below, locate and install the required tools.
+cave search dracut
+cave search grub
+cave search efibootmgr
+cave resolve category/dracut-package category/grub-package category/efibootmgr-package
+cave resolve --execute category/dracut-package category/grub-package category/efibootmgr-package
+                </pre>
+                <pre>
+cd /usr/src/linux
+make menuconfig
+make -j"$(nproc)"
+
+# Record the target kernel version before installing it.
+KVER="$(make -s kernelrelease)"
+make modules_install
+install -Dm755 arch/x86/boot/bzImage "/boot/vmlinuz-${KVER}"
+depmod "$KVER"
+dracut --force "/boot/initramfs-${KVER}.img" "$KVER"
+
+test -s "/boot/vmlinuz-${KVER}"
+test -s "/boot/initramfs-${KVER}.img"
+test -d "/lib/modules/${KVER}"
+                </pre>
+                <p>The worked layout mounts the EFI System Partition at <span class="path">/boot</span>. With efivarfs available and the machine booted in UEFI mode, install GRUB once, then regenerate its configuration after kernel changes.</p>
+                <pre>
+test -d /sys/firmware/efi/efivars
+findmnt /boot
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=Exherbo
+grub-mkconfig -o /boot/grub/grub.cfg
+efibootmgr -v
+grep -nE 'vmlinuz|initramfs' /boot/grub/grub.cfg
+                </pre>
+                <div class="warning"><strong>Keep a fallback:</strong> retain one known-good kernel, its modules, and its initramfs until the new kernel has booted successfully. Legacy BIOS, Secure Boot, encrypted root, RAID, LVM, and a separate <span class="path">/boot/efi</span> need different steps; follow the official guide for that layout.</div>
+              </div>
+            </div>
+
             <div class="box doc-block">
               <h2>building missing FUSE after the fact</h2>
               <div class="box-content">
@@ -2447,6 +2666,45 @@ ls -lah /dev/fuse
               </div>
             </div>
 
+            <div class="box doc-block" id="exherbo-amd-intel-graphics">
+              <h2>AMD, Radeon, Intel, nouveau, and virtual graphics</h2>
+              <div class="box-content">
+                <p>Open drivers normally use kernel DRM plus Mesa. They do not use <code>nvidia-smi</code>, NVIDIA module parameters, or a nouveau blacklist. Get a working KMS console first, then confirm rendering, Vulkan if needed, and the desktop session.</p>
+                <pre>
+lspci -nnk | grep -A3 -E 'VGA|3D|Display'
+lsmod | grep -E 'amdgpu|radeon|i915|xe|nouveau|virtio_gpu'
+journalctl -b -k | grep -iE 'drm|amdgpu|radeon|i915|xe|nouveau|virtio|firmware'
+glxinfo -B
+vulkaninfo --summary
+                </pre>
+                <table class="listing">
+                  <tr><th>result</th><th>meaning</th><th>next check</th></tr>
+                  <tr><td><code>Kernel driver in use: amdgpu</code></td><td>Normal for supported modern AMD GPUs.</td><td>Firmware errors, Mesa renderer, RADV/Vulkan, monitor connectors.</td></tr>
+                  <tr><td><code>Kernel driver in use: radeon</code></td><td>Normal for many older Radeon generations.</td><td>Do not force AMDGPU without confirming the card family and kernel support.</td></tr>
+                  <tr><td><code>llvmpipe</code> renderer</td><td>Software rendering; the graphical session is not using GPU acceleration.</td><td>Kernel binding, firmware, Mesa driver selection, permissions, and mismatched libraries.</td></tr>
+                  <tr><td>GPU visible but no kernel driver</td><td>Driver missing, disabled, blacklisted, or unsupported.</td><td>Kernel config, module aliases, command line, and <code>journalctl -b -k</code>.</td></tr>
+                  <tr><td>virtio GPU has basic output only</td><td>Guest display works without accelerated virgl.</td><td>VM display model, host 3D setting, guest Mesa virgl, and virtio GPU kernel support.</td></tr>
+                </table>
+                <p class="small">For video decode, inspect the available VA-API/VDPAU packages and test with <code>vainfo</code>. Hardware rendering and hardware video decode are related but separate paths.</p>
+              </div>
+            </div>
+
+            <div class="box doc-block" id="exherbo-hybrid-graphics">
+              <h2>hybrid graphics and multi-GPU laptops</h2>
+              <div class="box-content">
+                <p>Keep the integrated GPU as the display device first, verify both drivers independently, then configure render offload for selected applications. Do not blacklist the integrated driver or force every application onto the discrete GPU.</p>
+                <pre>
+lspci -nnk | grep -A3 -E 'VGA|3D|Display'
+loginctl show-session "$XDG_SESSION_ID" -p Type -p Desktop
+glxinfo -B
+
+# Mesa render-offload example; verify the discrete renderer in the output
+DRI_PRIME=1 glxinfo -B
+                </pre>
+                <p>Proprietary NVIDIA offload uses vendor-specific environment variables and matching userspace libraries. Confirm the current driver documentation, external-monitor wiring, and suspend behavior before enabling aggressive dGPU power management.</p>
+              </div>
+            </div>
+
             <div class="box doc-block">
               <h2>NVIDIA Wayland setup</h2>
               <div class="box-content">
@@ -2461,12 +2719,11 @@ find "/lib/modules/$(uname -r)" -name 'nvidia*.ko*'
 # /etc/modprobe.d/nvidia.conf
 sudo tee /etc/modprobe.d/nvidia.conf &gt;/dev/null &lt;&lt;'EOF'
 options nvidia_drm modeset=1 fbdev=1
-options nvidia NVreg_PreserveVideoMemoryAllocations=1
-options nvidia NVreg_DynamicPowerManagement=0x02
 softdep nvidia post: nvidia-uvm
 blacklist nouveau
 EOF
                 </pre>
+                <p>Optional laptop features need separate validation. <code>NVreg_DynamicPowerManagement=0x02</code> is for supported runtime-power-management setups. <code>NVreg_PreserveVideoMemoryAllocations=1</code> requires the NVIDIA suspend/resume/hibernate units and enough backing storage; do not enable either as a universal desktop default.</p>
                 <p>GRUB kernel arguments:</p>
                 <pre>
 nvidia-drm.modeset=1 nvidia-drm.fbdev=1
@@ -2489,17 +2746,16 @@ echo -n "fbdev="; cat /sys/module/nvidia_drm/parameters/fbdev
             <div class="box doc-block">
               <h2>initramfs and GRUB safety sweep</h2>
               <div class="box-content">
+                <p>After first boot, <code>uname -r</code> is suitable for rebuilding the running kernel's initramfs. During installation, reuse the explicit <code>KVER</code> from the kernel build section instead.</p>
                 <pre>
 KVER="$(uname -r)"
 
 sudo depmod "$KVER"
 sudo dracut --force "/boot/initramfs-${KVER}.img" "$KVER"
-sudo cp -av "/boot/initramfs-${KVER}.img" /boot/initramfs.img
 sudo grub-mkconfig -o /boot/grub/grub.cfg
 
 find /boot/EFI -maxdepth 4 -type f | sort
-grep -n 'nvidia-drm' /boot/grub/grub.cfg
-grep -n 'initrd' /boot/grub/grub.cfg
+grep -nE 'vmlinuz|initrd' /boot/grub/grub.cfg
                 </pre>
               </div>
             </div>
@@ -2603,6 +2859,99 @@ gtk-update-icon-cache -f /usr/share/icons/Adwaita 2&gt;/dev/null || true
               </div>
             </div>
 
+            <div class="box doc-block" id="exherbo-audio">
+              <h2>audio: ALSA first, then PipeWire</h2>
+              <div class="box-content">
+                <p>A complete modern desktop path needs kernel sound support, any device firmware, ALSA userspace, PipeWire, a session manager such as WirePlumber, and the PulseAudio compatibility service when desktop applications expect it.</p>
+                <pre>
+cave search alsa-utils
+cave search wireplumber
+cave show media/pipewire
+
+# after login as the desktop user
+aplay -l
+arecord -l
+alsamixer
+systemctl --user status pipewire wireplumber pipewire-pulse --no-pager
+wpctl status
+pactl info
+                </pre>
+                <table class="listing">
+                  <tr><th>symptom</th><th>start here</th></tr>
+                  <tr><td>No cards in <code>aplay -l</code></td><td>Kernel HDA/USB/SoundWire/SOF support, PCI/USB detection, firmware, and kernel log.</td></tr>
+                  <tr><td>Card exists but is silent</td><td>Unmute in <code>alsamixer</code>, inspect the WirePlumber profile, then select the correct sink with <code>wpctl</code>.</td></tr>
+                  <tr><td>HDMI audio missing</td><td>GPU audio function, display cable/receiver state, and the HDMI profile in <code>wpctl status</code>.</td></tr>
+                  <tr><td>Microphone missing</td><td><code>arecord -l</code>, capture mute/gain, selected source, and application portal permission.</td></tr>
+                  <tr><td>Bluetooth audio unavailable</td><td>BlueZ service, adapter rfkill, PipeWire Bluetooth support/options, pairing, and selected codec/profile.</td></tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="box doc-block" id="exherbo-laptop">
+              <h2>laptop completion checklist</h2>
+              <div class="box-content">
+                <table class="listing">
+                  <tr><th>area</th><th>verify</th><th>notes</th></tr>
+                  <tr><td>battery and thermals</td><td><code>upower -d</code>, <code>powerprofilesctl</code>, <code>sensors</code></td><td>Use one power policy daemon. Competing tuners can continually overwrite each other.</td></tr>
+                  <tr><td>suspend/resume</td><td><code>systemctl suspend</code>, then <code>journalctl -b -1</code></td><td>Test from a TTY before trusting lid-close suspend. Check GPU, Wi-Fi, and storage resume separately.</td></tr>
+                  <tr><td>hibernation</td><td>swap capacity, resume device/offset, initramfs resume support</td><td>Encrypted swap, swap files on Btrfs, and secure boot need extra planning.</td></tr>
+                  <tr><td>lid and keys</td><td><code>loginctl</code>, <code>libinput debug-events</code></td><td>Coordinate logind lid policy with the desktop power manager to avoid double handling.</td></tr>
+                  <tr><td>touchpad</td><td><code>libinput list-devices</code></td><td>Use the libinput input profile; configure gestures in the desktop or compositor.</td></tr>
+                  <tr><td>radios</td><td><code>rfkill list</code>, Bluetooth and Wi-Fi logs</td><td>Airplane-mode keys can leave a persistent soft or hardware block.</td></tr>
+                  <tr><td>dock and displays</td><td><code>lsusb -t</code>, compositor output tool, DRM log</td><td>USB-C mode, DisplayPort MST, Thunderbolt authorization, and hybrid-GPU wiring all matter.</td></tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="box doc-block" id="exherbo-virtualization">
+              <h2>virtual machines: Exherbo guest and KVM host</h2>
+              <div class="box-content">
+                <table class="listing">
+                  <tr><th>role</th><th>required pieces</th><th>verification</th></tr>
+                  <tr><td>KVM guest</td><td>virtio block/SCSI, network, console, RNG, balloon, and optional virtio GPU drivers; root filesystem support</td><td><code>lspci -nnk</code>, <code>ip -br link</code>, <code>dmesg | grep -i virtio</code>.</td></tr>
+                  <tr><td>VMware/VirtualBox/Hyper-V guest</td><td>matching kernel guest drivers, clock source, storage/network driver, and optional integration tools</td><td>Check the hypervisor identity and bound drivers before installing vendor tools.</td></tr>
+                  <tr><td>KVM host</td><td>CPU virtualization enabled in firmware, KVM kernel driver, QEMU, libvirt/management tools, bridge or NAT networking</td><td><code>lscpu | grep Virtualization</code>, <code>lsmod | grep kvm</code>, <code>virsh list --all</code>.</td></tr>
+                </table>
+                <pre>
+cave search qemu
+cave search libvirt
+cave search virt-manager
+cave show category/candidate-package
+cave resolve category/qemu-package category/management-package
+                </pre>
+                <p class="small">Service names and group policy depend on the selected libvirt build. Inspect installed units and sockets with <code>systemctl list-unit-files | grep -i virt</code>. PCI passthrough requires IOMMU planning and can make the host lose access to a device; it is not a first-boot task.</p>
+              </div>
+            </div>
+
+            <div class="box doc-block" id="exherbo-first-boot">
+              <h2>leave the chroot and prove first boot</h2>
+              <div class="box-content">
+                <p>Before exiting, confirm the user, network service, filesystem table, kernel, initramfs, loader entry, and root filesystem UUID. Then leave the chroot and unmount in reverse order from the live system.</p>
+                <pre>
+# inside chroot
+getent passwd alice
+findmnt --verify --verbose
+ls -lh /boot/vmlinuz-* /boot/initramfs-*.img
+grep -nE 'vmlinuz|initramfs|root=' /boot/grub/grub.cfg
+exit
+
+# live system
+sudo umount -R /mnt/exherbo
+sudo swapoff /dev/nvme0n1p2   # use the actual swap device
+sudo reboot
+                </pre>
+                <p>At first boot, use a local TTY if the display manager fails. Verify the running kernel, root mount, network, clock, failed units, and boot errors before adding more packages:</p>
+                <pre>
+uname -r
+findmnt /
+ip -br address
+timedatectl
+systemctl --failed
+journalctl -b -p 3 --no-pager
+                </pre>
+              </div>
+            </div>
+
             <div class="box doc-block">
               <h2>CONFIG_PROTECT files</h2>
               <div class="box-content">
@@ -2667,31 +3016,33 @@ sudo cave resolve --execute world
               <h2>post-update audit</h2>
               <div class="box-content">
                 <pre>
-nvidia-smi
-pactl info
-powerprofilesctl
+uname -r
+findmnt / /boot
+ip -br address
 systemctl --failed
 journalctl -b -p 3 --no-pager
 
-sudo sh -c '
-echo -n "modeset="; cat /sys/module/nvidia_drm/parameters/modeset
-echo -n "fbdev="; cat /sys/module/nvidia_drm/parameters/fbdev
-'
+# graphical profiles
+lspci -nnk | grep -A3 -E 'VGA|3D|Display'
+glxinfo -B
+echo "$XDG_CURRENT_DESKTOP / $XDG_SESSION_TYPE"
+systemctl --user --failed
+wpctl status
                 </pre>
-                <p>Good signs for this style of desktop:</p>
+                <p>Good signs for any selected profile:</p>
                 <ul class="doc-list">
-                  <li><code>nvidia-smi</code> sees the GPU and KDE processes.</li>
-                  <li><code>pactl info</code> says <code>PulseAudio (on PipeWire ...)</code>.</li>
-                  <li><code>powerprofilesctl</code> works and can set performance.</li>
-                  <li><code>XDG_SESSION_TYPE=wayland</code> inside Plasma Wayland.</li>
-                  <li><code>xdg-desktop-portal</code> and <code>xdg-desktop-portal-kde</code> are running.</li>
+                  <li>The running kernel has a matching module tree and the intended root and boot filesystems are mounted.</li>
+                  <li>The expected GPU driver is bound and <code>glxinfo -B</code> names hardware rather than llvmpipe.</li>
+                  <li>PipeWire/WirePlumber, portals, and a display manager are checked only when that profile uses them.</li>
+                  <li>Laptops resume, reconnect networking, restore audio, and drive external displays after suspend.</li>
                   <li>No priority error spam in <code>journalctl -b -p 3</code>.</li>
                 </ul>
+                <p class="small">For proprietary NVIDIA, additionally run <code>nvidia-smi</code> and inspect <code>/sys/module/nvidia_drm/parameters/modeset</code>. For AMD, Intel, nouveau, and virtio, inspect the matching DRM driver in <code>lspci -nnk</code> and the kernel log instead.</p>
               </div>
             </div>
 
-            <div class="box doc-block">
-              <h2>common Exherbo desktop failures</h2>
+            <div class="box doc-block" id="exherbo-troubleshooting">
+              <h2>common Exherbo failures by layer</h2>
               <div class="box-content">
                 <table class="listing">
                   <tr>
@@ -2700,9 +3051,44 @@ echo -n "fbdev="; cat /sys/module/nvidia_drm/parameters/fbdev
                     <th>check</th>
                   </tr>
                   <tr>
-                    <td>Wayland black screen</td>
-                    <td>NVIDIA KMS, EGL/Wayland userspace, KWin, SDDM session</td>
-                    <td><code>nvidia-smi</code>, <code>journalctl -b | grep -iE 'nvidia|kwin|drm'</code>, GRUB flags.</td>
+                    <td><code>cave sync</code> or fetch fails</td>
+                    <td>clock, DNS, TLS, repository configuration</td>
+                    <td><code>date -u</code>, <code>getent hosts</code>, repository files, certificate error, and proxy settings.</td>
+                  </tr>
+                  <tr>
+                    <td>resolution cannot produce a plan</td>
+                    <td>masks, licenses, options, providers, repository availability</td>
+                    <td>Read every unmet decision; use <code>cave show</code> on the named package instead of adding random global options.</td>
+                  </tr>
+                  <tr>
+                    <td>source build fails</td>
+                    <td>first compiler error, disk/RAM, tests, stale work</td>
+                    <td>Save the complete build log, find the first real error, check <code>df -h</code> and memory, and reproduce one package.</td>
+                  </tr>
+                  <tr>
+                    <td>kernel cannot mount root</td>
+                    <td>storage/filesystem driver, root UUID, initramfs</td>
+                    <td>Compare <code>blkid</code>, fstab, GRUB command line, initramfs contents, and the target kernel config.</td>
+                  </tr>
+                  <tr>
+                    <td>firmware/GRUB skips Exherbo</td>
+                    <td>UEFI mode, ESP mount, EFI entry, GRUB files</td>
+                    <td><code>findmnt /boot</code>, <code>efibootmgr -v</code>, <code>find /boot/EFI -type f</code>, and <code>grub-mkconfig</code> output.</td>
+                  </tr>
+                  <tr>
+                    <td>black screen or llvmpipe</td>
+                    <td>GPU binding, firmware, Mesa/vendor userspace, compositor</td>
+                    <td><code>lspci -nnk</code>, <code>glxinfo -B</code>, and kernel log filtered for the actual driver, DRM, and firmware.</td>
+                  </tr>
+                  <tr>
+                    <td>network has no internet</td>
+                    <td>radio/link, DHCP, route, DNS</td>
+                    <td>Check <code>rfkill</code>, address, default route, numeric-IP ping, then <code>getent hosts</code> in that order.</td>
+                  </tr>
+                  <tr>
+                    <td>sound absent or wrong output</td>
+                    <td>kernel/firmware, ALSA, WirePlumber policy</td>
+                    <td><code>aplay -l</code>, <code>alsamixer</code>, user service status, then <code>wpctl status</code>.</td>
                   </tr>
                   <tr>
                     <td>Flatpak fails with FUSE</td>
@@ -2710,32 +3096,42 @@ echo -n "fbdev="; cat /sys/module/nvidia_drm/parameters/fbdev
                     <td><code>modprobe fuse</code>, <code>ls -lah /dev/fuse</code>, <code>find /lib/modules/$(uname -r) -name fuse.ko*</code>.</td>
                   </tr>
                   <tr>
-                    <td>Discord cannot screenshare</td>
+                    <td>application cannot screenshare</td>
                     <td>PipeWire/portal stack</td>
-                    <td><code>systemctl --user status pipewire wireplumber xdg-desktop-portal</code>.</td>
+                    <td>User-service logs, one desktop-appropriate portal backend, PipeWire/WirePlumber, and session environment.</td>
                   </tr>
                   <tr>
-                    <td>System Settings missing pages</td>
-                    <td>KCM packages missing</td>
-                    <td><code>find /usr/share/applications -iname 'kcm_*.desktop'</code>.</td>
+                    <td>suspend resumes broken</td>
+                    <td>GPU, Wi-Fi, storage, firmware, power policy</td>
+                    <td>Reproduce from a TTY and inspect <code>journalctl -b -1</code>; test one suspect subsystem at a time.</td>
                   </tr>
                   <tr>
-                    <td>SDDM session missing</td>
+                    <td>desktop session missing</td>
                     <td>session desktop file</td>
-                    <td><code>ls /usr/share/wayland-sessions /usr/share/xsessions</code>.</td>
+                    <td><code>find /usr/share/xsessions /usr/share/wayland-sessions -maxdepth 1 -type f</code> and display-manager logs.</td>
                   </tr>
                   <tr>
-                    <td>Native Steam missing libc</td>
-                    <td>32-bit userspace/multiarch</td>
-                    <td>Use Flatpak Steam unless deliberately building multiarch.</td>
+                    <td>update leaves system inconsistent</td>
+                    <td>interrupted transaction, CONFIG_PROTECT, kernel/modules</td>
+                    <td>Review the failed package and protected files, finish the world plan, then rebuild boot artifacts if kernel-facing packages changed.</td>
                   </tr>
                 </table>
+                <p>Collect a small evidence bundle before asking for help. Remove secrets, private hostnames, MAC addresses, and authentication data before posting it.</p>
+                <pre>
+uname -a
+cave print-id-environment
+systemctl --failed
+journalctl -b -p 3 --no-pager
+lspci -nnk
+findmnt
+df -h
+                </pre>
               </div>
             </div>
 
             <div class="ok doc-block">
               <strong>Daily-driver standard:</strong>
-              boot files exist, GRUB has the right kernel/initramfs, NVIDIA says modeset/fbdev are enabled, KDE Wayland logs in, PipeWire works, portals run, NetworkManager is enabled, power profiles work, Flatpak runs, no config-protect leftovers remain, and <code>journalctl -b -p 3</code> is clean.
+              boot files exist, GRUB names the right kernel/initramfs, the selected GPU or console profile works, networking survives reboot, the chosen session logs in, profile-specific audio and portals work, laptop suspend is tested where relevant, no CONFIG_PROTECT files are forgotten, and <code>journalctl -b -p 3</code> has been reviewed.
             </div>
           </section>
 

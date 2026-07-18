@@ -72,6 +72,7 @@
       if (!validTabId(id)) id = "home";
 
       const savedScroll = options.keepScroll ? window.scrollY : 0;
+      const hashId = options.anchor || id;
 
       tabs.forEach((tab) => {
         tab.classList.toggle("active", tab.dataset.tab === id);
@@ -87,18 +88,28 @@
 
       clearFilter();
 
-      if (location.hash.replace("#", "") !== id) {
-        history.replaceState(null, "", "#" + id);
+      if (location.hash.replace("#", "") !== hashId) {
+        history.replaceState(null, "", "#" + hashId);
       }
 
       requestAnimationFrame(() => {
-        if (options.keepScroll) {
+        if (options.anchor) {
+          document.getElementById(options.anchor)?.scrollIntoView();
+        } else if (options.keepScroll) {
           const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
           window.scrollTo(0, Math.min(savedScroll, maxScroll));
         } else {
           window.scrollTo(0, 0);
         }
       });
+    }
+
+    function showHash(id) {
+      const target = document.getElementById(id);
+      const section = target?.closest(".section");
+      if (!section) return false;
+      showTab(section.id, id === section.id ? {} : { anchor: id });
+      return true;
     }
 
     tabs.forEach((tab, index) => {
@@ -213,7 +224,7 @@
     }
 
     const lookup = {
-      help: ["topics: boot, modules, logs, network, files, perms, graphics, package, kernel, kernel-lab, desktop, wm, fs, init, security, audio, virt, exherbo, paludis, cave, plasma, nvidia, downloads, glossary, tux"],
+      help: ["topics: boot, modules, logs, network, files, perms, graphics, package, kernel, kernel-lab, desktop, wm, fs, init, security, audio, virt, exherbo, paludis, cave, plasma, amd, radeon, intel, nvidia, laptop, headless, downloads, glossary, tux"],
       boot: ["boot: firmware -> bootloader -> kernel -> initramfs -> rootfs -> init -> services -> login"],
       modules: ["modules: lsmod, modinfo, modprobe, modprobe -r, /lib/modules/$(uname -r)"],
       logs: ["logs: journalctl -xb, dmesg -T, /var/log, systemctl --failed"],
@@ -231,11 +242,16 @@
       security: ["security: users, groups, sudo, permissions, ACLs, capabilities, AppArmor, SELinux, firewall"],
       audio: ["audio: ALSA, PulseAudio, PipeWire, WirePlumber, JACK"],
       virt: ["virt: chroot, systemd-nspawn, Docker, Podman, LXC, QEMU/KVM, libvirt"],
-      exherbo: ["exherbo: source-based distro using Paludis/cave, exheres packages, options.conf, world sets, CONFIG_PROTECT, and explicit system assembly."],
+      exherbo: ["exherbo: source-based distro using Paludis/cave, exheres packages, options.conf, world sets, CONFIG_PROTECT, and explicit system assembly. The field guide covers headless, AMD, Intel, Radeon, NVIDIA, virtual, KDE, GNOME, XFCE, LXQt, and standalone sessions."],
       paludis: ["paludis: package manager framework. cave is the main frontend. options.conf controls package choices; cave resolve world previews rebuilds before executing."],
       cave: ["cave: cave resolve world previews changes; cave resolve --execute world applies them; cave search finds packages; cave show inspects package options."],
       plasma: ["plasma: install plasma-desktop, plasma-workspace, kwin, systemsettings, sddm, xdg-desktop-portal-kde, plasma-pa, plasma-nm, powerdevil, kscreen, kinfocenter, and themes."],
+      amd: ["AMD graphics: identify the generation; modern cards normally use amdgpu plus firmware, Mesa RadeonSI, and RADV. Confirm binding with lspci -nnk and acceleration with glxinfo -B."],
+      radeon: ["Radeon graphics: older cards commonly use the radeon kernel driver plus firmware and Mesa. Do not force amdgpu until the exact GPU generation and kernel support are known."],
+      intel: ["Intel graphics: established hardware commonly uses i915 with Mesa Iris/ANV; newer hardware may use Xe where supported. Confirm the bound kernel driver and avoid llvmpipe."],
       nvidia: ["nvidia: for KDE Wayland use nvidia-drivers with wayland/tools, nvidia-drm.modeset=1, nvidia-drm.fbdev=1, nouveau blacklisted, matching kernel modules, and a rebuilt initramfs."],
+      laptop: ["laptop: verify battery, thermals, suspend, hibernation, lid handling, touchpad, rfkill, hybrid graphics, and dock/display hotplug before relying on mobile use."],
+      headless: ["headless: omit desktop graphics, display manager, portals, and GUI packages; configure networking, time, local recovery, SSH keys, and a firewall."],
       downloads: ["downloads: user friendly, advanced, rolling, server, minimal, security, and special-use distro groups"],
       glossary: ["glossary: kernel, userspace, initramfs, module, syscall, daemon, TTY, compositor, mount point"],
       tux: ["tux: Linux mascot. Header artwork links to Wikimedia Commons."]
@@ -265,12 +281,12 @@
 
     window.addEventListener("hashchange", () => {
       const id = location.hash.replace("#", "");
-      if (validTabId(id)) showTab(id);
+      showHash(id);
     });
 
     const hash = location.hash.replace("#", "");
-    if (hash && validTabId(hash)) {
-      showTab(hash);
+    if (hash && showHash(hash)) {
+      // showHash activates the parent tab and positions nested anchors.
     } else {
       const active = document.querySelector(".tab.active");
       showTab(active ? active.dataset.tab : "home", { keepScroll: true });
